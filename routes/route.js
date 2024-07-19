@@ -1,10 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const authController = require("../controllers/AuthController");
+
+const {authMiddleware} = require('../middlewares/AuthMiddleware');
 const {
   userValidator,
   userLoginValidator,
 } = require("../validators/AuthValidator");
+
+const authController = require("../controllers/AuthController");
+const productsController = require('../controllers/ProductsController');
 
 /**
  * @swagger
@@ -70,5 +74,6 @@ router.post("/register", userValidator, authController.register);
  *         description: Error logging in
  */
 router.post("/login", userLoginValidator, authController.login);
+
 
 module.exports = router;

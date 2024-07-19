@@ -15,3 +15,15 @@ exports.ValidModel = (model, res) => {
 
     return null;
 }
+
+
+exports.ValidWithThrown = (model, res) => {
+    const errors = validationResult(model);
+
+    if (!errors.isEmpty()) {
+        //return errors.array();
+        throw Error( {errors : errors.array() });
+    }
+
+    return null;
+}

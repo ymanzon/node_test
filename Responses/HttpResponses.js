@@ -7,13 +7,13 @@ exports.Created = (content, res) => {
 }
 
 exports.BadRequest = (content, res) => {
-    res.status(400).json({ success: false, data: content });
+    res.status(400).json({ success: false, message: content });
 }
 
 exports.NotFound = (content, res) => {
-    res.status(404).json({ success: false, data: content });
+    res.status(404).json({ success: false, message: content });
 }
 
 exports.InternalServerError = (content, res) => {
-    res.status(500).json({ success: false, data: content });
+    res.status(500).json({ success: false, message: content });
 }
