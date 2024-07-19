@@ -1,7 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const authController = require('../controllers/AuthController');
-
+const authController = require("../controllers/AuthController");
+const {
+  userValidator,
+  userLoginValidator,
+} = require("../validators/AuthValidator");
 
 /**
  * @swagger
@@ -25,7 +28,7 @@ const authController = require('../controllers/AuthController');
  *             properties:
  *               name:
  *                 type: string
- *               email: 
+ *               email:
  *                  type: string
  *               password:
  *                 type: string
@@ -39,7 +42,7 @@ const authController = require('../controllers/AuthController');
  *       500:
  *         description: Error registering user
  */
-router.post('/register', authController.register);
+router.post("/register", userValidator, authController.register);
 
 /**
  * @swagger
@@ -66,6 +69,6 @@ router.post('/register', authController.register);
  *       500:
  *         description: Error logging in
  */
-router.post('/login', authController.login);
+router.post("/login", userLoginValidator, authController.login);
 
 module.exports = router;

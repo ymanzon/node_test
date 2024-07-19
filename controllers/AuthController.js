@@ -1,37 +1,38 @@
-const db = require('../config/db');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const authRepository = require("../repositories/AuthRepository");
+const db = require("../config/db");
 
-exports.register = async (req, res) => {
-    
-  const { name, email, password, active, user_id } = req.body;
-  
+//const { validationResult } = require("express-validator");
+const validModel = require("../validators/Validator");
+const service = require("../repositories/AuthRepository");
+const { Ok, BadRequest } = require("../Responses/HttpResponses");
+
+exports.register = async (req, res, next) => {
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    let query = 'INSERT INTO users (name, email, password, active, user_id) VALUES (?, ?, ?, ?, ?)';
-    await db.query(query, [name, email, hashedPassword, active, user_id]);
-
-    res.status(201).send('User registered');
+    const errors = validModel.ValidModel(req);
+    if (errors != null) {
+      BadRequest(errors, res);
+    } else {
+      await service.Register(req.body);
+      Ok("user register", res);
+    }
   } catch (error) {
-    console.log(error);
-    res.status(500).send('Error registering user');
+    BadRequest(error.message, res);
   }
 };
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
   const { email, password } = req.body;
-  
+
   try {
-    const [rows] = await db.query('SELECT password FROM users WHERE email = ? and active = 1', [email]);
-    if (rows.length === 0) return res.status(400).send('Invalid credentials');
-    
-    const user = rows[0];
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) return res.status(400).send('Invalid credentials');
-    
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token });
+    const errors = validModel.ValidModel(req);
+    if (errors != null) {
+      BadRequest(errors, res);
+    } else {
+      const token = await service.Auth(req.body);
+      Ok(token, res);
+    }
   } catch (error) {
-    res.status(500).send('Error logging in');
+    //res.status(500).send("Error logging in");
+    BadRequest(error.message, res);
   }
 };

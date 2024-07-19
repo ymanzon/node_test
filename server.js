@@ -3,11 +3,12 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 
+//const startUp = require('./startup')
+
 const app = express();
 const authRoutes = require('./routes/route');
 
 const { swaggerUi, specs } = require('./config/swagger');
-
 
 app.use(morgan('dev'));
 app.use(express.json());
