@@ -3,7 +3,7 @@ const router = express.Router();
 
 const {authMiddleware} = require('../middlewares/AuthMiddleware');
 const brandsController = require('../controllers/BrandsController');
-const { createValidator }  = require('../validators/BrandValidators');
+const { createValidator, updateValidator }  = require('../validators/BrandValidators');
 
 /**
  * @swagger
@@ -65,7 +65,7 @@ router.post('/', authMiddleware, createValidator, brandsController.create);
 
 /**
  * @swagger
- * /brands/id:
+ * /brands/{id}:
  *   put:
  *     summary: Update brand data
  *     tags: [Brands]
@@ -97,14 +97,21 @@ router.post('/', authMiddleware, createValidator, brandsController.create);
  *       400:
  *         description: Invalid token
  */
-router.put('/:id', authMiddleware, brandsController.update);
+router.put('/:id', authMiddleware, updateValidator, brandsController.update);
 
 /**
  * @swagger
- * /brands:
+ * /brands/{id}:
  *   delete:
  *     summary: Delete brand data
  *     tags: [Brands]
+ *     parameters:
+ *     - in: path
+ *       name: id
+ *       schema:
+ *          type: integer
+ *       required: true
+ *       description: The id reference for brand deletes
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -115,6 +122,6 @@ router.put('/:id', authMiddleware, brandsController.update);
  *       400:
  *         description: Invalid token
  */
-router.delete('/', authMiddleware, brandsController.delete);
+router.delete('/:id', authMiddleware, brandsController.delete);
 
 module.exports = router;

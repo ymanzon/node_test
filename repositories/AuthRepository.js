@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 exports.Auth = async (body) => {
     const { email, password } = body;
     const [rows] = await db.query(
-        "SELECT password FROM users WHERE email = ? and active = 1",
+        "SELECT id, password FROM users WHERE email = ? and active = 1",
         [email]
       );
       if (rows.length === 0) throw Error("Invalid credentials"); //return res.status(400).send("Invalid credentials");
@@ -15,9 +15,7 @@ exports.Auth = async (body) => {
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) throw Error("Invalid credentials"); //return res.status(400).send("Invalid credentials");
   
-      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: "1h"});
       return {token: token};
 };
 
