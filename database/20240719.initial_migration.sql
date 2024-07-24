@@ -83,3 +83,17 @@ ALTER VIEW users_view AS
 SELECT id, name, email, password,active, user_id, create_at, update_at, delete_at
 FROM users
 WHERE delete_at is null;
+
+
+CREATE VIEW products_view AS 
+SELECT id, sku, name, brand_id, active, create_at, update_at
+FROM products
+WHERE delete_at is null;
+
+ALTER TABLE products 
+ADD user_id int 
+
+ALTER VIEW products_view AS 
+SELECT id, sku, name, brand_id, active, user_id, create_at, update_at
+FROM products
+WHERE delete_at is null;

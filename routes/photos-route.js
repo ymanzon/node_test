@@ -1,77 +1,46 @@
 const express = require("express");
+
 const router = express.Router();
+
+const multer = require('multer');
+//const storage = require('./storageConfig'); 
 
 const {authMiddleware} = require('../middlewares/AuthMiddleware');
 
+const storage = require('../middlewares/StorageMiddleware');
+const upload = multer({ storage: storage });
+
 
 const controller = require('../controllers/PhotosController');
+
 
 /**
  * @swagger
  * /photos:
  *   post:
- *     summary: Get photos data
- *     tags: [Photos]
- *     security:
- *       - bearerAuth: []
+ *     summary: Upload an image
+ *     tags: [Images]
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: formData
+ *         name: image
+ *         type: file
+ *         description: The image to upload
  *     responses:
  *       200:
- *         description: photos data
- *       401:
- *         description: Access denied. No token provided.
- *       400:
- *         description: Invalid token
+ *         description: Image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 imageId:
+ *                   type: string
+ *                   description: The ID of the uploaded image
  */
-route.post("/", authMiddleware,  controller.create );
-/**
- * @swagger
- * /photos:
- *   get:
- *     summary: Get photos data
- *     tags: [Photos]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: photos data
- *       401:
- *         description: Access denied. No token provided.
- *       400:
- *         description: Invalid token
- */
-route.get("/", authMiddleware,  controller.retrive );
-/**
- * @swagger
- * /photos:
- *   put:
- *     summary: Update photos data
- *     tags: [Photos]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: photos data
- *       401:
- *         description: Access denied. No token provided.
- *       400:
- *         description: Invalid token
- */
-route.put("/", authMiddleware,  controller.update );
-/**
- * @swagger
- * /photos:
- *   delete:
- *     summary: Delete photos data
- *     tags: [Photos]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: photos data
- *       401:
- *         description: Access denied. No token provided.
- *       400:
- *         description: Invalid token
- */
-route.delete("/", authMiddleware,  controller.delete );
+//router.post("/", upload.single('image'),  controller.create );
+router.post("/",   controller.create );
 
+
+module.exports = {router}

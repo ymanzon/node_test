@@ -7,6 +7,8 @@ exports.filter = async (req, res)=>{ }
 ///POST
 exports.create = async (req, res) => {
 
+    console.log(req);
+    /*
     try {
 
         //ValidModel(req);
@@ -15,7 +17,7 @@ exports.create = async (req, res) => {
         Ok("Brand regiter", res);
     } catch (error) {
         BadRequest(error.message, res);
-    }
+    }*/
  }
 
 ///PUT

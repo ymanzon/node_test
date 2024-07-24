@@ -47,7 +47,7 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
     //console.log(req.params);
     try {
-        await repository.Delete(req.params);
+        await repository.Delete(req.params, req.user.id);
         Ok("User is deleted", res);
       } catch (error) {
         BadRequest(error.message, res);

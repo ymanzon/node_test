@@ -4,7 +4,6 @@ const repository = require("../repositories/BrandRepository");
 const { ValidWithThrown, ValidModel } = require("../validators/Validator");
 //GET
 exports.filter = async (req, res) => {
-  console.log(req.query);
   try {
     let brands = await repository.Retrive(req.query);
     Ok({ brands: brands }, res);
@@ -53,6 +52,3 @@ exports.delete = async (req, res) => {
     BadRequest(error.message, res);
   }
 };
-
-//PUT
-exports.changeStatus = async (req, res) => {};

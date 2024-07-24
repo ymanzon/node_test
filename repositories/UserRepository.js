@@ -9,9 +9,20 @@ exports.Create = async (body, user_id) => {
 
     if (rows.length != 0) throw Error("User exists!!!");
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    query = "INSERT INTO users (name, email, password, active, user_id) VALUES(?, ?, ?,  ?, ?) ";
-    await db.query(query, [name, email, hashedPassword, active, user_id ]);
+    const conn = await db.getConnection();
+    
+    try {
+        await conn.beginTransaction();
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        query = "INSERT INTO users (name, email, password, active, user_id) VALUES(?, ?, ?,  ?, ?) ";
+        let id = await db.query(query, [name, email, hashedPassword, active, user_id ]);
+        console.log(id.insertId);
+        await conn.commit();
+    } catch (error) {
+        await conn.rollback();
+    }
+    
 }
 
 exports.Retrive = async (body) => {
@@ -70,10 +81,10 @@ exports.Update = async (body, params, user_id) => {
 }
 
 
-exports.Delete = async (params) => {
+exports.Delete = async (params, user_id) => {
     const { id } = params;
 
-    let query = "UPDATE users SET delete_at = NOW() WHERE id = ? ";
+    let query = "UPDATE users SET user_id = ?, delete_at = NOW() WHERE id = ? ";
 
-    await db.query(query, [id]);
+    await db.query(query, [user_id, id]);
 }
