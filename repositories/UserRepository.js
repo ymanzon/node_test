@@ -1,90 +1,132 @@
-const db = require('../config/db');
+const db = require("../config/db");
 const bcrypt = require("bcryptjs");
-//const jwt = require("jsonwebtoken");
+const { UserModel, UserView } = require("../models/user.model");
+const { Op } = require("sequelize");
+const {
+  CreateAction,
+  UpdateAction,
+  DeleteAction,
+  RetriveAction,
+} = require("../services/LogService");
 
 exports.Create = async (body, user_id) => {
-    const { name, email, password, active } = body;
-    let query = "SELECT email FROM `users_view` WHERE active = 1 and email = ? ";
-    const [rows] = await db.query(query, [email]);
+  const { name, email, password, active } = body;
+  let results = await UserView.findOne({ where: { email: email } });
+  if (results) throw Error(`The user with email '${email}' already exists`);
 
-    if (rows.length != 0) throw Error("User exists!!!");
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    const conn = await db.getConnection();
-    
-    try {
-        await conn.beginTransaction();
+  const userBody = {
+    name: name,
+    email: email,
+    password: hashedPassword,
+    active: active,
+    user_id: user_id,
+  };
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        query = "INSERT INTO users (name, email, password, active, user_id) VALUES(?, ?, ?,  ?, ?) ";
-        let id = await db.query(query, [name, email, hashedPassword, active, user_id ]);
-        console.log(id.insertId);
-        await conn.commit();
-    } catch (error) {
-        await conn.rollback();
-    }
-    
-}
+  await UserModel.create(userBody);
+
+  await CreateAction(userBody, user_id, "USER");
+};
 
 exports.Retrive = async (body) => {
-    const { name, email, active, user_id, create_at, update_at } = body;
-    let query = "SELECT name, email, active, user_id, create_at, update_at FROM `users_view`";
-    let filter = "";
-    let parameters = [];
-    if (name) {
-        filter += " AND name like ? ";
-        parameters.push(`%${name}%`);
-    }
+  const { name, email, active, user_id, create_at, update_at } = body;
 
-    if (email) {
-        filter += " AND email like ? ";
-        parameters.push(`%${email}%`);
-    }
+  let parameter = [];
 
-    if (active) {
-        filter += " AND active = ?";
-        parameters.push(`${active == "true" ? 1 : 0}`);
-    }
+  if (name) parameters.push({ name: { [Op.like]: `%${name}%` } });
+  if (email) parameters.push({ email: { [Op.like]: `%${email}%` } });
+  if (active) parameters.push({ active: active == "true" ? 1 : 0 });
+  if (user_id) parameters.push({ user_id: user_id });
+  //create_at
+  if (create_at) {
+    let create_at_start = new Date(create_at);
+    let create_at_end = new Date(create_at);
 
-    if (user_id) {
-        filter += " AND user_id = ? ";
-        parameters.push(`${user_id}`);
-    }
+    create_at_end.setDate(create_at_start.getDate() + 1);
 
-    if (create_at) {
-        filter += " AND create_at == ? ";
-        parameters.push(`${create_at}`);
-    }
+    console.log(create_at_start);
+    console.log(create_at_end);
 
-    if (update_at) {
-        filter += " AND update_at == ? ";
-        parameters.push(`${update_at}`);
-    }
+    parameters.push({ create_at: { [Op.gte]: create_at_start } });
+    parameters.push({ create_at: { [Op.lte]: create_at_end } });
+  }
+  //menores que  create_at <=
+  if (create_at_before)
+    parameters.push({ create_at: { [Op.lte]: create_at_before } });
+  //mayores que create_at >=
+  if (create_at_after)
+    parameters.push({ create_at: { [Op.gte]: create_at_after } });
 
-    if (filter != "") filter = `WHERE ${filter.substring(4)}`;
+  const rows = await UserView.findAll({ where: parameters });
 
-    query = `${query} ${filter}`;
-    console.log(query);
-    const [rows] = await db.query(query, parameters);
+  //await RetriveAction(userBody, user_id, "USER");
 
-    return rows;
-    }
+  return rows;
+};
 
 exports.Update = async (body, params, user_id) => {
-    const { id } = params;
-    const { name, email, active } = body;
+  const { id } = params;
+  const { name, email, active } = body;
 
-    let _active = active == true ? 1 : 0;
+  let _active = active == true ? 1 : 0;
 
-    let query = "UPDATE users SET name = ?, email = ?, active = ?, user_id = ?, update_at = NOW() WHERE id = ? ";
+  //valida si trata de cambiar el nombre o el email si ya existe
+  let preExist = await UserView.findOne({
+    where :{
+        email:email,
+        id:{
+            [Op.new]:id,
+        }
+    }
+ });
 
-    await db.query(query, [name, email, _active, user_id, id]);
-}
+ if(preExist){
+    throw Error(
+        `The user cannot be updated because the email '${email}' already exists.`
+      );
+ }
 
+ const user = await UserModel.findByPk(id);
+
+ if (!user) {
+    throw Error(`User '${id}' not found.`);
+  }
+
+  user.name = name;
+  //user.email = email;
+  user.active = active == true?1:0;
+  user.update_at = Date.now();
+  //password
+  user.password = await bcrypt.hash(password, 10);
+  user.user_id = user_id;
+  await user.save();
+
+  //TODO
+  //await UpdateAction()
+
+};
 
 exports.Delete = async (params, user_id) => {
-    const { id } = params;
+  const { id } = params;
 
-    let query = "UPDATE users SET user_id = ?, delete_at = NOW() WHERE id = ? ";
+  let preExists = await UserModel.findOne({
+    where: {
+      id: id,
+    },
+  });
 
-    await db.query(query, [user_id, id]);
-}
+  if (!preExists) {
+    throw Error(`The user ${id} not found.`);
+  }
+
+  let brand = await BrandModel.findByPk(id);
+
+  brand.delete_at = Date.now();
+  brand.user_id = params.user_id;
+
+  await brand.save();
+
+  //TODO
+  //await DeleteAction()
+};

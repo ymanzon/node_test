@@ -1,67 +1,173 @@
 const db = require("../config/db");
+const { Op } = require("sequelize");
+const { ProductModel, ProductView } = require("../models/product.model");
+const {
+  CreateAction,
+  UpdateAction,
+  DeleteAction,
+} = require("../services/LogService");
 
-exports.Create = async (body, user_id) => {
-  const { sku, name, brand_id, active } = body;
-  let query = "SELECT sku FROM products WHERE sku = ? and active = 1";
-  const [rows] = await db.query(query, [sku]);
+exports.Create = async (body) => {
+  const { sku, name, brand_id, active, user_id } = body;
 
-  if (rows.length != 0) throw Error("Products exists");
+  let results = await ProductModel.findOne({
+    where: {
+      sku: sku,
+      //name: name,
+    },
+  });
 
-  query = "INSERT INTO products (sku, name, brand_id, active, user_id) VALUES(?, ?, ?, ?, ?) ";
-  await db.query(query, [sku, name, brand_id, active, user_id]);
+  if (results)
+    throw Error(`Product sku '${sku}' already exists.`);
+
+  let target = {
+    sku: sku,
+    name: name,
+    brand_id: brand_id,
+    active: active,
+    user_id: user_id,
+  };
+
+  await ProductModel.create(target);
+
+  //falta guardar el objeto en target, marca error.
+  await CreateAction(target, user_id, "PRODUCTS");
 };
 
 exports.Retrive = async (body) => {
-  const { name, active } = body;
-  let query = "SELECT id, sku, name, brand_id, active, user_id, create_at, update_at FROM `products_view`";
-  let filter = "";
-  let parameters = [];
+  const { sku, name, brand_id, active, create_at, create_at_after, create_at_before } = body;
 
+  let parameters = []
+  if(sku) parameters.push({ sku:{[Op.like] : `%${sku}%`}  });
+  if(name) parameters.push({ name:{[Op.like] : `%${name}%`} });
+  if(brand_id) parameters.push({brand_id: brand_id});
+  if (active) parameters.push({ active: active == "true" ? 1 : 0 });
+  if (create_at) {
+    let create_at_start = new Date(create_at);
+    let create_at_end = new Date(create_at);
 
-  if (sku) {
-    filter += " AND sku like ? ";
-    parameters.push(`%${sku}%`);
+    create_at_end.setDate(create_at_start.getDate() + 1);
+
+    console.log(create_at_start);
+    console.log(create_at_end);
+
+    parameters.push({ create_at: { [Op.gte]: create_at_start } });
+    parameters.push({ create_at: { [Op.lte]: create_at_end } });
   }
 
-  if (name) {
-    filter += " AND name like ? ";
-    parameters.push(`%${name}%`);
-  }
+  //menores que  create_at <=
+  if (create_at_before)
+    parameters.push({ create_at: { [Op.lte]: create_at_before } });
+  //mayores que create_at >=
+  if (create_at_after)
+    parameters.push({ create_at: { [Op.gte]: create_at_after } });
 
-  if (brand_id) {
-    filter += " AND brand_id = ? ";
-    parameters.push(`${brand_id}`);
-  }
+  const results = await ProductView.findAll({ where: parameters });
 
-  if (active) {
-    filter += " AND active = ?";
-    parameters.push(`${active == "true" ? 1 : 0}`);
-  }
-
-  if (filter != "") filter = `WHERE ${filter.substring(4)}`;
-
-  query = `${query} ${filter}`;
-  console.log(query);
-  const [rows] = await db.query(query, parameters);
-
-  return rows;
+  return results;
 };
 
-exports.Update = async (body, params, user_id) => {
-    const { id } = params;
-    const { sku, name,brand_id, active } = body;
+exports.Update = async (body, params) => {
+  const { id } = params;
+  const { sku, name, brand_id, active, user_id } = body;
 
-    let _active = active == true ? 1 : 0;
+  let preExists = await ProductView.findOne({
+    where :{
+      sku:sku,
+      id:{
+        [Op.ne] :id
+      }
+    }
+  });
 
-    let query = "UPDATE products SET sku = ?, name = ?, brand_id = ?, active = ?, user_id = ?, update_at = NOW() WHERE id = ? ";
+  if(preExists) throw Error ( `The brand cannot be updated because the sku '${sku}' already exists.` );
 
-    await db.query(query, [sku, name, brand_id, _active, user_id, id]);
+  const product = await ProductModel.findByPk(id);
+
+  if(!product)
+    throw Error(`The product ${id} not found.`);
+
+  let changes = {
+    tableName : "products",
+    changes:[
+      {
+        columnName:"sku",
+        previus:product.sku,
+        current:sku
+      },
+      {
+        columnName:"name",
+      previus:product.name,
+      current:name
+    },
+    {
+      columnName:"active",
+      previus:product.active,
+      current:active
+    },
+    {
+      columnName:"user_id",
+      previus:product.user_id,
+      current:user_id
+    },
+    ]
+  };
+
+  
+  product.name = name;
+  product.sku = sku;
+  product.active  = (active == true)?1:0;
+  product.update_at = Date.now();
+  product.user_id = user_id;
+
+  //TODO
+  await product.save();
+
+  await UpdateAction(changes, user_id, "PRODUCTS");
+
 };
 
-exports.Delete = async (params, user_id) => {
-    const { id } = params;
+exports.Delete = async (params) => {
+  const { id, user_id } = params;
 
-    let query = "UPDATE products SET user_id = ? delete_at = NOW() WHERE id = ? ";
+  let preExists = await ProductModel.findOne({
+    where: {
+      id: id,
+    },
+  });
 
-    await db.query(query, [user_id, id]);
+  if (!preExists) {
+    throw Error(`The product ${id} not found.`);
+  }
+
+  let product = await ProductModel.findByPk(id);
+
+  let delete_at = Date.now();
+  let changes = {
+    tableName:"products",
+    changes:[
+      {
+        columnName:delete_at,
+        previus: null,
+        current:delete_at
+      },
+      {columnName:user_id,
+        previus: product.user_id,
+        current : params.user_id
+      }
+    ]
+  }
+
+  product.delete_at = delete_at;
+  product.user_id = params.user_id;
+
+  await product.save();
+
+  await DeleteAction(changes, user_id, "PRODUCTS");
+
+  /*
+
+  let query = "UPDATE products SET user_id = ? delete_at = NOW() WHERE id = ? ";
+
+  await db.query(query, [user_id, id]);]*/
 };

@@ -258,3 +258,115 @@ MODIFY COLUMN email VARCHAR(255) NOT NULL
 ALTER TABLE user_event_log 
 MODIFY COLUMN module VARCHAR(255) NOT NULL ,
 MODIFY COLUMN user_action VARCHAR(255) NOT NULL 
+
+CREATE VIEW user_event_log_view AS
+SELECT id, module, user_action, user_id, create_at, event_content 
+FROM user_event_log;
+
+ALTER TABLE user_event_log 
+MODIFY COLUMN create_at DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP) 
+
+ALTER VIEW products_view AS
+SELECT p.id, p.sku, p.name, p.brand_id, b.name AS brand_name, p.active,p. user_id, p.create_at, p.update_at
+FROM products AS p
+INNER JOIN brands AS b ON (b.id = p.brand_id)
+WHERE p.delete_at is null 
+
+
+CREATE TABLE stock_transactions
+(
+	id BIGINT auto_increment primary key,
+	product_id BIGINT not null,
+	quantity DECIMAL not null,
+	type_move int not null,
+	active BIT NOT NULL,
+	processed BIT,
+	user_id BIGINT NOT NULL, 
+	create_at DATETIME DEFAULT(current_timestamp),
+	update_at DATETIME,
+	delete_at DATETIME,
+	FOREIGN KEY(product_id) REFERENCES products(id),
+	FOREIGN KEY(user_id) REFERENCES users(id)
+)
+
+CREATE INDEX idx_stock_transactions_product_id_type_move ON stock_transactions(product_id, type_move, processed, active, create_at, delete_at )
+
+CREATE INDEX idx_stock_transactions_processed ON stock_transactions(processed, active, create_at, delete_at )
+
+CREATE VIEW stock_transactions_view AS 
+SELECT 
+	id,
+	product_id,
+	quantity,
+	type_move,
+	active
+	processed,
+	user_id, 
+	create_at,
+	update_at
+FROM stock_transactions
+WHERE
+	delete_at IS NULL
+
+CREATE TABLE inventory(
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	product_id BIGINT NOT NULL,
+	quantity DECIMAL NOT NULL,
+	allow_negative BIT,
+	active BIT,
+	user_id BIGINT NOT NULL,
+	create_at DATETIME DEFAULT (current_timestamp),
+	update_at DATETIME,
+	delete_at DATETIME,
+	FOREIGN KEY(product_id) REFERENCES products(id),
+	FOREIGN KEY(user_id) REFERENCES products(id)
+)
+CREATE INDEX idx_inventory_product_id ON inventory(product_id )
+
+CREATE INDEX idx_inventory ON inventory(product_id, active, create_at, delete_at )
+
+CREATE INDEX idx_inventory_active ON inventory(active, create_at, delete_at )
+
+CREATE VIEW inventory_view AS 
+SELECT 
+	id,
+	product_id,
+	quantity,
+	allow_negative,
+	active,
+	user_id, 
+	create_at,
+	update_at
+FROM inventory
+WHERE
+	delete_at IS NULL;
+
+ALTER TABLE stock_transactions
+MODIFY COLUMN quantity DECIMAL NOT NULL;
+
+
+--___
+ALTER TABLE inventory 
+MODIFY COLUMN allow_negative BIT NOT NULL DEFAULT(0)
+
+
+alter table inventory 
+	add unique key product_id(product_id);;
+	
+ALTER TABLE inventory
+DROP FOREIGN KEY inventory_ibfk_2
+
+ALTER TABLE inventory
+ADD CONSTRAINT inventory_ibfk_2
+FOREIGN KEY (user_id) REFERENCES users(id);
+
+ALTER VIEW products_view AS 
+SELECT p.id, p.sku, p.name, p.brand_id, b.name AS brand_name, i.quantity , p.active,p. user_id, p.create_at, p.update_at
+FROM products AS p
+INNER JOIN brands AS b ON (b.id = p.brand_id)
+INNER JOIN inventory AS  i ON (p.id = i.product_id)
+WHERE p.delete_at is null 
+
+
+ALTER TABLE stock_transactions
+MODIFY COLUMN type_move varchar(3) NOT NULL

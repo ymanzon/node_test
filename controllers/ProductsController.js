@@ -20,7 +20,8 @@ exports.create = async (req, res, next) => {
     if (errors != null) {
       BadRequest(errors, res);
     } else {
-      await repository.Create(req.body, req.user.id);
+      req.body.user_id = req.user.id;
+      await repository.Create(req.body);
       Ok("Product regiter", res);
     }
   } catch (error) {
@@ -36,7 +37,8 @@ exports.update = async (req, res) => {
     if (errors != null) {
       BadRequest(errors, res);
     } else {
-      await repository.Update(req.body, req.params, req.user.id);
+      req.body.user_id = req.user.id;
+      await repository.Update(req.body, req.params);
       Ok("Product updated", res);
     }
   } catch (error) {
@@ -47,7 +49,8 @@ exports.update = async (req, res) => {
 ///DEL
 exports.delete = async (req, res) => {
   try {
-    await repository.Delete(req.params, req.user.id);
+    req.params.user_id = req.user.id;
+    await repository.Delete(req.params);
     Ok("Product is deleted", res);
   } catch (error) {
     BadRequest(error.message, res);

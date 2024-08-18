@@ -7,7 +7,7 @@ exports.Created = (content, res) => {
 }
 
 exports.BadRequest = (content, res) => {
-    res.status(400).json({ success: false, message: content });
+    res.status(200).json({ success: false, message: content });
 }
 
 exports.NotFound = (content, res) => {

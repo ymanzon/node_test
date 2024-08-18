@@ -3,7 +3,7 @@ const router = express.Router();
 
 const {authMiddleware} = require('../middlewares/AuthMiddleware');
 
-const { productCreateValidator } = require("../validators/ProductValidator");
+const { productCreateValidator, productUpdateValidator } = require("../validators/ProductValidator");
 
 const productsController = require('../controllers/ProductsController');
 
@@ -60,7 +60,7 @@ router.post('/', authMiddleware, productCreateValidator, productsController.crea
  *       400:
  *         description: Invalid token
  */
-router.put('/', authMiddleware, productsController.update);
+router.put('/:id', authMiddleware, productUpdateValidator, productsController.update);
 
 /**
  * @swagger
@@ -78,6 +78,6 @@ router.put('/', authMiddleware, productsController.update);
  *       400:
  *         description: Invalid token
  */
-router.delete('/', authMiddleware, productsController.delete);
+router.delete('/:id', authMiddleware, productsController.delete);
 
 module.exports = router;

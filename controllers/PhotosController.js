@@ -2,7 +2,9 @@ const db = require('../config/db');
 const { Ok, BadRequest } = require("../Responses/HttpResponses");
 const { ValidModel } = require("../validators/Validator");
 //GET
-exports.filter = async (req, res)=>{ }
+exports.filter = async (req, res)=>{ 
+    console.log(req);
+}
 
 ///POST
 exports.create = async (req, res) => {

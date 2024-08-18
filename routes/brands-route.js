@@ -49,6 +49,8 @@ router.get('/', authMiddleware, brandsController.filter);
  *                  properties:
  *                      name:
  *                          type: string
+ *                      photo_path:
+ *                          type: string
  *                      active:
  *                          type: boolean
  *     security:
@@ -84,6 +86,8 @@ router.post('/', authMiddleware, createValidator, brandsController.create);
  *                  type: object
  *                  properties:
  *                     name:
+ *                      type: string
+ *                     photo_path:
  *                      type: string
  *                     active:
  *                      type: boolean
