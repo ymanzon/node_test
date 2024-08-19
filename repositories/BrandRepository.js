@@ -1,7 +1,7 @@
 const db = require("../config/db");
 const { Op } = require("sequelize");
 const { BrandModel, BrandViewModel } = require("../models/brand.model");
-const           { CreateAction, UpdateAction, DeleteAction }  = require ('../services/LogService');
+const { CreateAction, UpdateAction, DeleteAction }  = require ('../services/LogService');
 
 exports.Create = async (body) => {
   const { name, active, photo_path, user_id } = body;
@@ -12,7 +12,6 @@ exports.Create = async (body) => {
     throw Error(`Brand name '${name}' alrealy exists.`);
   }
 
-  //console.log(body);
   await BrandModel.create({
     name: name,
     active: active == "true" ? 1 : 0,

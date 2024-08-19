@@ -369,4 +369,164 @@ WHERE p.delete_at is null
 
 
 ALTER TABLE stock_transactions
-MODIFY COLUMN type_move varchar(3) NOT NULL
+MODIFY COLUMN type_move varchar(3) NOT NULL;
+
+----
+
+CREATE table customers(
+	id bigint auto_increment primary key,
+	firstname varchar(255) not null,
+	lastname varchar(255) not null,
+	active bit, 
+	create_at datetime not null default (current_timestamp),
+	update_at datetime,
+	delete_at datetime
+)
+
+CREATE INDEX idx_customer_firstname ON customers(firstname, lastname, active);
+
+CREATE table sales_orders(
+	id bigint auto_increment primary key,
+	legal_number varchar(255) not null,
+	customer_id bigint not null,
+	subtotal decimal not null,
+	total decimal not null,
+	active bit,
+	create_at datetime default (current_timestamp),
+	update_at datetime,
+	delete_at datetime
+)
+alter table sales_orders add unique key legal_number(legal_number);
+
+CREATE INDEX idx_sales_orders_legal_number ON sales_orders(legal_number);
+CREATE INDEX idx_sales_orders_customer ON sales_orders(customer_id, active);
+
+CREATE table sales_order_details(
+	id bigint auto_increment primary key,
+	legal_number varchar(255) not null,
+	product_id bigint not null,
+	quantity decimal not null,
+	unit_price decimal,
+	total decimal,
+	create_at datetime not null default(current_timestamp)
+)
+
+CREATE INDEX idx_sales_ordes_details_legal_number ON sales_order_details(legal_number);
+
+
+CREATE table providers(
+	id bigint auto_increment primary key,
+	firstname varchar(255) not null,
+	lastname varchar(255) not null,
+	active bit, 
+	create_at datetime not null default (current_timestamp),
+	update_at datetime,
+	delete_at datetime
+)
+
+CREATE INDEX idx_providers_firstname ON providers(firstname, lastname, active);
+
+CREATE table purchases_orders(
+	id bigint auto_increment primary key,
+	legal_number varchar(255) not null,
+	provider_id bigint not null,
+	subtotal decimal not null,
+	total decimal not null,
+	active bit,
+	create_at DATETIME not null default (current_timestamp),
+	update_at datetime,
+	delete_at DATETIME,
+	foreign KEY(provider_id) references providers(id)
+)
+
+alter table purchases_orders add unique key legal_number(legal_number);
+
+CREATE INDEX idx_spurchases_orders_legal_number ON purchases_orders(legal_number);
+CREATE INDEX idx_purchases_orders_provider ON purchases_orders(provider_id, active);
+
+CREATE table purchases_orders_details(
+	id bigint auto_increment primary key,
+	purchases_orders_id bigint  not null,  
+	legal_number varchar(255) not null,
+	product_id bigint not null,
+	quantity decimal not null,
+	unit_price decimal,
+	total decimal,
+	create_at datetime not null default(current_timestamp),
+	foreign key(purchases_orders_id) references purchases_orders(id)
+)
+
+CREATE INDEX idx_purchases_orders_details ON purchases_orders_details(legal_number);
+
+
+ALTER  TABLE sales_orders 
+ADD CONSTRAINT  sales_orders_fk_customer
+FOREIGN  KEY (customer_id) references customers(id)
+
+DROP TABLE sales_order_details
+
+CREATE table sales_orders_details(
+	id bigint auto_increment primary key,
+ 	sales_orders_id BIGINT NOT null,
+	legal_number varchar(255) not null,
+	product_id bigint not null,
+	quantity decimal not null,
+	unit_price decimal,
+	total decimal,
+	create_at datetime not null default(CURRENT_TIMESTAMP),
+	FOREIGN KEY  (sales_orders_id) references sales_orders(id)
+)
+	
+CREATE INDEX idx_sales_ordes_details_legal_number ON sales_orders_details(legal_number);
+
+CREATE VIEW customers_view AS
+SELECT id, firstname, lastname, active, create_at, update_at FROM customers
+WHERE delete_at is null;
+
+CREATE VIEW sales_orders_view AS
+SELECT so.id, so.legal_number, c.firstname as customer_firstname, c.lastname as customer_lastname, so.subtotal, so.total, so.active, so.create_at, so.update_at 
+FROM sales_orders as so
+INNER JOIN customers as c ON (so.customer_id = c.id)
+WHERE so.delete_at is null;
+
+CREATE VIEW sales_orders_details_view AS 
+SELECT sod.id, sod.legal_number, sod.product_id, p.name AS product_name, sod.quantity, sod.unit_price, sod.total, sod.create_at 
+FROM sales_orders_details as sod 
+INNER JOIN products AS p
+
+CREATE VIEW providers_view AS
+SELECT id, firstname, lastname, active, create_at, update_at FROM providers
+WHERE delete_at is null;
+
+CREATE VIEW purchases_orders_view AS
+SELECT po.id, po.legal_number, p.firstname as provider_firstname, p.lastname as provider_lastname, po.subtotal, po.total, po.active, po.create_at, po.update_at 
+FROM purchases_orders as po
+INNER JOIN providers as p ON (po.provider_id = p.id)
+WHERE po.delete_at is null;
+
+ALTER TABLE purchases_orders_details
+ADD provider_id bigint not null;
+
+alter table purchases_orders_details
+ADD CONSTRAINT purchases_orders_details_fk_provider
+FOREIGN KEY (provider_id) references providers(id)
+
+CREATE VIEW purchases_orders_details_view AS 
+SELECT pod.id, pod.legal_number, pod.product_id, pod.quantity, pod.unit_price, pod.total, pod.create_at,prov.firstname as provider_firstname
+FROM purchases_orders_details AS pod
+INNER JOIN providers as prov ON (pod.provider_id = prov.id)
+INNER JOIN products as prod ON (pod.product_id = prod.id) 
+
+ALTER TABLE customers 
+ADD user_id BIGINT NOT NULL;
+
+ALTER TABLE customers
+ADD CONSTRAINT customer_user_fk
+FOREIGN KEY (user_id) REFERENCES users(id)
+
+ALTER TABLE customers
+ADD cust_code VARCHAR(10) NOT NULL;
+
+ALTER TABLE customers 
+ADD UNIQUE KEY cust_code(cust_code)
+
