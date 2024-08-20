@@ -1,19 +1,18 @@
-const db = require("../config/db");
 const { Op } = require("sequelize");
-const { CustomerModel, CustomerModelView } = require("../models/customer.model");
+const { ProviderModel, ProviderModelView } = require("../models/provider.model");
 const { CreateAction, UpdateAction, DeleteAction }  = require ('../services/LogService');
 
 exports.Create = async (body) => {
-  const { cust_code, firstname, lastname, active, user_id } = body;
+  const { prov_code, firstname, lastname, active, user_id } = body;
 
-  let results = await CustomerModel.findOne({ where: { cust_code: cust_code } });
+  let results = await ProviderModelView.findOne({ where: { prov_code: prov_code } });
 
   if (results) {
-    throw Error(`Customer code '${cust_code}' already exists.`);
+    throw Error(`Provider code '${prov_code}' already exists.`);
   }
 
-  await CustomerModel.create({
-    cust_code: cust_code,
+  await ProviderModel.create({
+    prov_code: prov_code,
     firstname: firstname,
     lastname:lastname,
     active: active == "true" ? 1 : 0,
@@ -21,19 +20,19 @@ exports.Create = async (body) => {
   });
 
   let logMesage = {
-    cust_code: cust_code,
+    prov_code: prov_code,
     firstname: firstname,
     lastname:lastname,
     active: active == "true" ? 1 : 0,
     user_id: user_id,
   }
 
-  await CreateAction(logMesage, user_id, 'CUSTOMERS');
+  await CreateAction(logMesage, user_id, 'PROVIDERS');
 };
 
 exports.Retrive = async (body) => {
   const {
-    cust_code,
+    prov_code,
     firstname,
     lastname,
     active,
@@ -44,7 +43,7 @@ exports.Retrive = async (body) => {
   } = body;
 
   let parameters = [];
-  if (cust_code) parameters.push({ cust_code: { [Op.like]: `%${cust_code}%` } });
+  if (prov_code) parameters.push({ prov_code: { [Op.like]: `%${prov_code}%` } });
   if (firstname) parameters.push({ firstname: { [Op.like]: `%${firstname}%` } });
   if (lastname) parameters.push({ lastname: { [Op.like]: `%${lastname}%` } });
 
@@ -71,18 +70,18 @@ exports.Retrive = async (body) => {
     parameters.push({ create_at: { [Op.gte]: create_at_after } });
 
   
-  const results = await CustomerModelView.findAll({ where: parameters });
+  const results = await ProviderModelView.findAll({ where: parameters });
 
   return results;
 };
 
 exports.Update = async (body, params) => {
   const { id } = params;
-  const { cust_code, firstname, lastname, active, user_id } = body;
+  const { prov_code, firstname, lastname, active, user_id } = body;
 
-  let preExists = await CustomerModel.findOne({
+  let preExists = await ProviderModel.findOne({
     where: {
-      cust_code: cust_code,
+        prov_code: prov_code,
       firstname: firstname,
       lastname:lastname,
       id: {
@@ -93,44 +92,44 @@ exports.Update = async (body, params) => {
 
   if (preExists) {
     throw Error(
-      `The customer cannot be updated because the cust_code '${cust_code}' already exists.`
+      `The provider cannot be updated because the prov_code '${prov_code}' already exists.`
     );
   }
 
   //find row by primary key
-  const customer = await CustomerModel.findByPk(id);
+  const provider = await ProviderModel.findByPk(id);
 
-  if (!customer) {
-    throw Error(`Customer '${id}' not found.`);
+  if (!provider) {
+    throw Error(`Provider '${id}' not found.`);
   }
 
-  customer.firstname = firstname;
-  customer.lastname = lastname;
-  customer.cust_code = cust_code;
-  customer.active = active == true ? 1 : 0;
-  customer.update_at = Date.now();
-  customer.user_id = user_id;
+  provider.firstname = firstname;
+  provider.lastname = lastname;
+  provider.prov_code = prov_code;
+  provider.active = active == true ? 1 : 0;
+  provider.update_at = Date.now();
+  provider.user_id = user_id;
 
-  await customer.save();
+  await provider.save();
 };
 
 exports.Delete = async (params) => {
   const { id } = params;
 
-  let preExists = await CustomerModel.findOne({
+  let preExists = await ProviderModel.findOne({
     where: {
       id: id,
     },
   });
 
   if (!preExists) {
-    throw Error(`The customer ${id} not found.`);
+    throw Error(`The provider ${id} not found.`);
   }
 
-  let customer = await CustomerModel.findByPk(id);
+  let provider = await ProviderModel.findByPk(id);
 
-  customer.delete_at = Date.now();
-  customer.user_id = params.user_id;
+  provider.delete_at = Date.now();
+  provider.user_id = params.user_id;
 
-  await customer.save();
+  await provider.save();
 };

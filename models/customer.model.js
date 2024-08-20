@@ -8,7 +8,7 @@ const CustomerModel = sequelize.define('CustomerModel', {
     primaryKey: true,
   },
   cust_code:{
-    type:DataTypes.STRING,
+    type:DataTypes.STRING(10),
     allowNull:false,
   },
   firstname: {
@@ -21,34 +21,67 @@ const CustomerModel = sequelize.define('CustomerModel', {
   },
   active: {
     type: DataTypes.BOOLEAN,
-    allowNull:FontFaceSetLoadEvent,
+    allowNull:false,
   },
   user_id:{
     type:DataTypes.BIGINT,
     allowNull:false,
   },
-  created_at: {
+  create_at: {
     type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: DataTypes.NOW,
+    defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
   },
-  updated_at: {
+  update_at: {
     type: DataTypes.DATE,
     allowNull:true,
   },
-  deleted_at: {
-    type: DataTypes.DATE,
-    allowNull:true,
-  },
+    delete_at:{
+      type:DataTypes.DATE,
+      allowNull:true,
+    }
 }, {
   tableName: 'customers',
-  timestamps: true
+  timestamps: false
 });
 
 const CustomerModelView = sequelize.define('CustomerModelView', {
+  id: {
+    type: DataTypes.BIGINT,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  cust_code:{
+    type:DataTypes.STRING(10),
+    allowNull:false,
+  },
+  firstname: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  lastname: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  active: {
+    type: DataTypes.BOOLEAN,
+    allowNull:false,
+  },
+  user_id:{
+    type:DataTypes.BIGINT,
+    allowNull:false,
+  },
+  create_at: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  update_at: {
+    type: DataTypes.DATE,
+    allowNull:true,
+  }
 }, {
   tableName: 'customers_view',
-  timestamps: true
+  timestamps: false
 });
 
 

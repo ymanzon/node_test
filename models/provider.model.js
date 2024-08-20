@@ -1,32 +1,28 @@
 const { sequelize } = require('../config/sequelize.config');
 const { DataTypes } = require('sequelize');
 
-const PurchaseOrderModel = sequelize.define('PurchaseOrderModel', {
+const ProviderModel = sequelize.define('ProviderModel', {
     id: {
       type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
     },
-    legal_number: {
+    prov_code:{
+      type:DataTypes.STRING(10),
+      allowNull:false,
+    },
+    firstname: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    provider_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
-    subtotal: {
-      type: DataTypes.DECIMAL,
-      allowNull: false,
-    },
-    total: {
-      type: DataTypes.DECIMAL,
+    lastname: {
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     active: {
       type: DataTypes.BOOLEAN, // Sequelize usa BOOLEAN en lugar de BIT
     },
-    user_id:{
+    user_id :{
       type:DataTypes.BIGINT,
       allowNull:false,
     },
@@ -42,38 +38,30 @@ const PurchaseOrderModel = sequelize.define('PurchaseOrderModel', {
       type: DataTypes.DATE,
     },
   }, {
-    tableName: 'purchases_orders',
-    timestamps: false,
+    tableName: 'providers',
+    timestamps: false
   });
-
-  const PurchaseOrderModelView = sequelize.define('PurchaseOrderModelView', {
+  
+  const ProviderModelView = sequelize.define('ProviderModelView', {
     id: {
       type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
     },
-    legal_number: {
+    prov_code:{
+      type:DataTypes.STRING(10),
+      allowNull:false,
+    },
+    firstname: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    provider_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
-    subtotal: {
-      type: DataTypes.DECIMAL,
-      allowNull: false,
-    },
-    total: {
-      type: DataTypes.DECIMAL,
+    lastname: {
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     active: {
       type: DataTypes.BOOLEAN, // Sequelize usa BOOLEAN en lugar de BIT
-    },
-    user_id:{
-      type:DataTypes.BIGINT,
-      allowNull:false,
     },
     create_at: {
       type: DataTypes.DATE,
@@ -81,11 +69,11 @@ const PurchaseOrderModel = sequelize.define('PurchaseOrderModel', {
     },
     update_at: {
       type: DataTypes.DATE,
-    }
+    },
   }, {
-    tableName: 'purchases_orders_view',
-    timestamps: false,
+    tableName: 'providers_view',
+    timestamps: false
   });
   
-  module.exports = {PurchaseOrderModel, PurchaseOrderModelView};
-  
+
+  module.exports = {ProviderModel , ProviderModelView};

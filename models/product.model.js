@@ -92,6 +92,10 @@ const ProductView = sequelize.define(
       type: DataTypes.BIGINT,
       allowNull: false,
     },
+    quantity:{
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    }
   },
   {
     tableName: "products_view",

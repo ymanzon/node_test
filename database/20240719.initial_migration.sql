@@ -530,3 +530,67 @@ ADD cust_code VARCHAR(10) NOT NULL;
 ALTER TABLE customers 
 ADD UNIQUE KEY cust_code(cust_code)
 
+ALTER TABLE sales_orders 
+ADD user_id BIGINT NOT NULL;
+
+ALTER TABLE sales_orders
+ADD CONSTRAINT sales_orders_customer_fk
+FOREIGN KEY (user_id) REFERENCES users(id);
+
+ALTER VIEW customers_view AS 
+SELECT id,cust_code, firstname, lastname, user_id, active, create_at, update_at 
+FROM customers
+WHERE delete_at IS null
+
+ALTER VIEW sales_orders_view AS 
+SELECT so.id, so.legal_number, so.customer_id, c.firstname as customer_firstname, c.lastname as customer_lastname, so.subtotal, so.total, so.active, so.create_at, so.update_at
+, so.user_id
+FROM sales_orders as so
+INNER JOIN customers as c ON (so.customer_id = c.id)
+WHERE so.delete_at is null;
+
+
+ALTER TABLE sales_orders DROP CONSTRAINT sales_orders_customer_fk;
+ALTER TABLE sales_orders DROP CONSTRAINT sales_orders_fk_customer;
+
+ALTER TABLE sales_orders
+ADD CONSTRAINT sales_orders_user_fk
+FOREIGN KEY (user_id) REFERENCES users(id)
+
+ALTER TABLE sales_orders
+ADD CONSTRAINT sales_orders_customer_fk
+FOREIGN KEY (customer_id) REFERENCES customers(id)
+
+ALTER VIEW sales_orders_details_view AS 
+SELECT sod.id, sod.legal_number, sod.product_id, p.name AS product_name, sod.quantity, sod.unit_price, sod.total, sod.create_at 
+FROM sales_orders_details AS sod 
+INNER JOIN products AS p ON (sod.product_id = p.id)
+INNER JOIN sales_orders AS so ON ( sod.sales_orders_id = so.id)
+
+ALTER TABLE providers
+ADD prov_code VARCHAR(10) NOT NULL;
+
+
+ALTER TABLE providers
+ADD UNIQUE KEY prov_code(prov_code)
+
+ALTER TABLE providers 
+ADD user_id BIGINT NOT NULL;
+
+ALTER TABLE providers 
+ADD CONSTRAINT providers_user_fk
+FOREIGN KEY (user_id) REFERENCES users(id)
+
+ALTER VIEW providers_view AS 
+SELECT 
+	id, prov_code, firstname, lastname, ACTIVE, create_at, update_at, user_id
+ FROM providers 
+ WHERE delete_at IS NULL 
+
+ ALTER TABLE purchases_orders
+ADD user_id BIGINT NOT NULL;
+
+ALTER TABLE purchases_orders
+ADD CONSTRAINT purchases_orders_users_fk 
+FOREIGN KEY (user_id) REFERENCES users(id)
+

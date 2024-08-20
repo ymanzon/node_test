@@ -12,6 +12,11 @@ const brandsRoute = require('./routes/brands-route'); //*
 const usersRoute = require('./routes/users-route');
 const photosRoute = require('./routes/photos-route');
 const inventoryRoute = require('./routes/inventory-route');
+const customerRoute = require('./routes/customer-route');
+const salesOrderRoute = require('./routes/sales-orders-route');
+
+const providerRoute = require('./routes/provider-route');
+const purchasesOrdersRoute = require('./routes/purchases-orders-route');
 
 const { swaggerUi, specs } = require('./config/swagger');
 
@@ -24,6 +29,13 @@ app.use('/api/brands', brandsRoute);
 app.use('/api/users', usersRoute);
 //app.use('/api/photos', photosRoute);
 app.use('/api/inventory', inventoryRoute);
+app.use('/api/customers', customerRoute);
+
+app.use('/api/sales-orders', salesOrderRoute);
+app.use('/api/purchases-orders', purchasesOrdersRoute);
+
+app.use('/api/providers', providerRoute);
+
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 

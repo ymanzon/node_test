@@ -1,81 +1,88 @@
 const { sequelize } = require('../config/sequelize.config');
 const { DataTypes } = require('sequelize');
 
-const PurchasesOrdersDetailsModel = sequelize.define('PurchasesOrdersDetailsModel', {
+const SalesOrderModel = sequelize.define('SalesOrderModel', {
     id: {
       type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
     },
-    purchases_orders_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
     legal_number: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    product_id: {
+    customer_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
-    quantity: {
+    subtotal: {
       type: DataTypes.DECIMAL,
       allowNull: false,
-    },
-    unitPrice: {
-      type: DataTypes.DECIMAL,
     },
     total: {
       type: DataTypes.DECIMAL,
+      allowNull: false,
     },
-    created_at: {
+    active: {
+      type: DataTypes.BOOLEAN, // Sequelize usa BOOLEAN en lugar de BIT
+    },
+    create_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     },
-  }, {
-    tableName: 'purchases_orders_details',
-    timestamps: false,
-  });
-  
-  const PurchasesOrdersDetailsModelView = sequelize.define('PurchasesOrdersDetailsModelView', {
-    id: {
-      type: DataTypes.BIGINT,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    purchases_orders_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
-    legal_number: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
-    product_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
-    quantity: {
-      type: DataTypes.DECIMAL,
-      allowNull: false,
-    },
-    unitPrice: {
-      type: DataTypes.DECIMAL,
-    },
-    total: {
-      type: DataTypes.DECIMAL,
-    },
-    created_at: {
+    update_at: {
       type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
     },
+    delete_at: {
+      type: DataTypes.DATE,
+    },
+    user_id:{
+      type: DataTypes.BIGINT,
+      allowNull:false,
+    }
   }, {
-    tableName: 'purchases_orders_details_view',
+    tableName: 'sales_orders',
     timestamps: false,
   });
 
-  module.exports = {PurchasesOrdersDetailsModel, PurchasesOrdersDetailsModelView};
+  const SalesOrderModelView = sequelize.define('SalesOrderModelView', {
+    id: {
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    legal_number: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    customer_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
+    subtotal: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    },
+    total: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    },
+    active: {
+      type: DataTypes.BOOLEAN, // Sequelize usa BOOLEAN en lugar de BIT
+    },
+    create_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    update_at: {
+      type: DataTypes.DATE,
+    }
+  }, {
+    tableName: 'sales_orders_view',
+    timestamps: false,
+  });
+  
+  module.exports = {SalesOrderModel, SalesOrderModelView};
   
