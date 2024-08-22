@@ -5,9 +5,9 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'JWT Login API',
+      title: 'API service descriptions',
       version: '1.0.0',
-      description: 'A simple API for user registration and login with JWT authentication',
+      description: 'API webservices',
     },
     servers: [
       {
@@ -20,6 +20,52 @@ const options = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
+        },
+      },
+      schemas: {
+        User: {
+          type: 'object',
+          required: ['username', 'email', 'password', 'role', 'language', 'status'],
+          properties: {
+            username: {
+              type: 'string',
+              description: 'Username for the user. It should be unique and between 3 to 50 characters.',
+              example: 'johndoe',
+              minLength: 3,
+              maxLength: 50,
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Email of the user. Must be a valid email format.',
+              example: 'johndoe@example.com',
+            },
+            password: {
+              type: 'string',
+              format: 'password',
+              description: 'Password for the user. It should be at least 8 characters long and contain a mix of letters, numbers, and special characters.',
+              example: 'Password123!',
+              minLength: 8,
+            },
+            role: {
+              type: 'string',
+              description: 'Role of the user in the system',
+              enum: ['admin', 'user', 'guest'], // Opciones disponibles para el campo "role"
+              example: 'user',
+            },
+            language: {
+              type: 'string',
+              description: 'Preferred language of the user',
+              enum: ['en', 'es', 'fr'], // Opciones disponibles para el campo "language"
+              example: 'en',
+            },
+            status: {
+              type: 'string',
+              description: 'Account status of the user',
+              enum: ['active', 'inactive', 'suspended'], // Opciones para "status"
+              example: 'active',
+            },
+          },
         },
       },
     },

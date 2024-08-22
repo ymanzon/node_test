@@ -45,7 +45,6 @@ const { createValidator }  = require('../validators/SalesOrdersValidators');
 router.get('/', authMiddleware, salesOrdersController.filter);
 
 
-//post
 /**
  * @swagger
  * /sales-orders:

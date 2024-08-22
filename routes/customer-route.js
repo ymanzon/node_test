@@ -7,6 +7,31 @@ const { createValidator, updateValidator } = require('../validators/CustomerVali
 
 /**
  * @swagger
+ * /brands/{id}:
+ *   get:
+ *     summary: ger braand by id
+ *     tags: [Brands]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The id
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Update brand
+ *       401:
+ *         description: Access denied. No token provided.
+ *       400:
+ *         description: Invalid token
+ */
+router.get('/:id', authMiddleware, customersController.findById);
+
+/**
+ * @swagger
  * /customers:
  *   get:
  *     summary: Get brand data

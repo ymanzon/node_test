@@ -14,18 +14,25 @@ exports.Create = async (body) => {
 
   await BrandModel.create({
     name: name,
-    active: active == "true" ? 1 : 0,
+    active: active,
     photo_path: photo_path,
     user_id: user_id,
   });
 
   let logMesage = {
     name: name,
-    active: active == "true" ? 1 : 0,
+    active: active,
     photo_path: photo_path
   }
 
   await CreateAction(logMesage, user_id, 'BRAND');
+};
+
+//GetById
+exports.ById = async (body) => {
+  console.log(body);
+  const { id, user_id} = body;
+  return await BrandViewModel.findAll({ where: {id : id} });
 };
 
 exports.Retrive = async (body) => {
@@ -33,8 +40,8 @@ exports.Retrive = async (body) => {
     name,
     active,
     create_at,
-    create_at_before,
-    create_at_after,
+    start_create_at,
+    end_create_at,
     user_id,
   } = body;
 
@@ -49,25 +56,24 @@ exports.Retrive = async (body) => {
 
     create_at_end.setDate(create_at_start.getDate() + 1);
 
-    console.log(create_at_start);
-    console.log(create_at_end);
-
     parameters.push({ create_at: { [Op.gte]: create_at_start } });
     parameters.push({ create_at: { [Op.lte]: create_at_end } });
   }
 
-  //menores que  create_at <=
-  if (create_at_before)
-    parameters.push({ create_at: { [Op.lte]: create_at_before } });
-  //mayores que create_at >=
-  if (create_at_after)
-    parameters.push({ create_at: { [Op.gte]: create_at_after } });
+  //menores que  create_at <= lte 
+  if (start_create_at)
+  {
+    let create_at_start = new Date(start_create_at);
 
-  //update at
-  /*
-  if(user_id) 
-    parameters.push( {user_id: user_id} );
-  */
+    parameters.push({ create_at: { [Op.gte]: create_at_start } });
+  }
+  //mayores que create_at >= gte
+  if (end_create_at)
+  {
+    let create_at_end = new Date(end_create_at);
+
+    parameters.push({ create_at: { [Op.lte]: create_at_end } });
+  }
 
   //se utiliza la vista para recuperar la invormacion de las marcas
   const results = await BrandViewModel.findAll({ where: parameters });
@@ -103,7 +109,7 @@ exports.Update = async (body, params) => {
   }
 
   brand.name = name;
-  brand.active = active == true ? 1 : 0;
+  brand.active = active;
   brand.update_at = Date.now();
   brand.user_id = user_id;
   brand.photo_path = photo_path ?? brand.photo_path ;

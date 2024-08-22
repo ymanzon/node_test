@@ -38,8 +38,8 @@ exports.Retrive = async (body) => {
     lastname,
     active,
     create_at,
-    create_at_before,
-    create_at_after,
+    start_create_at,
+    end_create_at,
     user_id,
   } = body;
 
@@ -56,20 +56,21 @@ exports.Retrive = async (body) => {
 
     create_at_end.setDate(create_at_start.getDate() + 1);
 
-    console.log(create_at_start);
-    console.log(create_at_end);
-
     parameters.push({ create_at: { [Op.gte]: create_at_start } });
     parameters.push({ create_at: { [Op.lte]: create_at_end } });
   }
 
-  //menores que  create_at <=
-  if (create_at_before)
-    parameters.push({ create_at: { [Op.lte]: create_at_before } });
-  //mayores que create_at >=
-  if (create_at_after)
-    parameters.push({ create_at: { [Op.gte]: create_at_after } });
+  if (start_create_at) //<= gte
+  {
+    let create_at_start = new Date(start_create_at);
+    parameters.push({ create_at: { [Op.gte]: create_at_start } });
+  }
 
+  if (end_create_at) //>= lte
+  {
+    let create_at_end = new Date(end_create_at);
+    parameters.push({ create_at: { [Op.lte]: create_at_end } });
+  }
   
   const results = await CustomerModelView.findAll({ where: parameters });
 

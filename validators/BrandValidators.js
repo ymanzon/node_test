@@ -1,8 +1,8 @@
-const { body, check } = require("express-validator");
+const { body } = require("express-validator");
 
 const createValidator = [
     body('name')
-    .exists({ checkFalsy : false }).withMessage("Name is required").isLength({min:1, max:50}).withMessage("brand min : 1 max 50"),
+    .exists({ checkFalsy : false }).withMessage("Name is required").isLength({min:2, max:50}).withMessage("brand min : 2 max 50"),
     body('active')
     .exists({checkFalsy:false}).withMessage("Active is required").isBoolean().withMessage("active require datetype bool")    
 ]

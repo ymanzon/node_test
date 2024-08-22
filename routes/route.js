@@ -8,7 +8,7 @@ const {
 } = require("../validators/AuthValidator");
 
 const authController = require("../controllers/AuthController");
-const productsController = require('../controllers/ProductsController');
+
 
 /**
  * @swagger
@@ -26,20 +26,34 @@ const productsController = require('../controllers/ProductsController');
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         application/x-www-form-urlencoded:
  *           schema:
  *             type: object
+ *             required:
+ *              name
+ *              email
+ *              password
+ *              active
  *             properties:
  *               name:
  *                 type: string
+ *                 description: name for user.
+ *                 example: perenganito
  *               email:
  *                  type: string
+ *                  format: email
+ *                  description: email used for username
+ *                  example: perenganito@example.com
  *               password:
- *                 type: string
+ *                  type: string
+ *                  format: password
+ *                  description: passsword for username
+ *                  example: qwerty
  *               active:
  *                  type: boolean
- *               user_id:
- *                  type: integer
+ *                  description: active or inactive
+ *                  enum: [active, inactive]
+ *                  example: active
  *     responses:
  *       201:
  *         description: User registered
@@ -57,14 +71,24 @@ router.post("/register", userValidator, authController.register);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         application/x-www-form-urlencoded:
  *           schema:
  *             type: object
+ *             required:
+ *              email
+ *              password
  *             properties:
  *               email:
  *                 type: string
+ *                 description: username for login
+ *                 format: email
+ *                 example: perenganito@example.com
  *               password:
  *                 type: string
+ *                 description: password for account
+ *                 format: password
+ *                 example: qwerty
+ * 
  *     responses:
  *       200:
  *         description: Successful login

@@ -21,13 +21,13 @@ const purchasesOrdersRoute = require('./routes/purchases-orders-route');
 const { swaggerUi, specs } = require('./config/swagger');
 
 app.use(morgan('dev'));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 
 app.use('/api/products', productsRoute);
 app.use('/api/brands', brandsRoute);
 app.use('/api/users', usersRoute);
-//app.use('/api/photos', photosRoute);
 app.use('/api/inventory', inventoryRoute);
 app.use('/api/customers', customerRoute);
 
@@ -35,7 +35,6 @@ app.use('/api/sales-orders', salesOrderRoute);
 app.use('/api/purchases-orders', purchasesOrdersRoute);
 
 app.use('/api/providers', providerRoute);
-
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 

@@ -28,17 +28,17 @@ const BrandViewModel = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true
     },
-    delete_at: {
+    /*delete_at: {
       type: DataTypes.DATE,
       allowNull: true
-    },
+    },*/
     user_id: {
       type: DataTypes.BIGINT,
       allowNull: false
     },
     photo_path: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     }
   },{
     tableName: 'brands_view',
@@ -81,7 +81,7 @@ const BrandModel = sequelize.define(
       },
       photo_path: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
       }
     },{
       tableName: 'brands',

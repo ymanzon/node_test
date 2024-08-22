@@ -40,7 +40,7 @@ const controller = require('../controllers/PhotosController');
  *                   description: The ID of the uploaded image
  */
 //router.post("/", upload.single('image'),  controller.create );
-router.post("/",   controller.create );
+router.post("/", upload.single(""), controller.create );
 
 
 module.exports = {router}
