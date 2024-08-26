@@ -3,7 +3,7 @@ const router = express.Router();
 
 const {authMiddleware} = require('../middlewares/AuthMiddleware');
 const providerController = require('../controllers/ProviderController');
-//const { createValidator, updateValidator } = require('../validators/CustomerValidator');
+const { createValidator, updateValidator } = require('../validators/ProviderValidator');
 
 /**
  * @swagger
@@ -34,6 +34,18 @@ const providerController = require('../controllers/ProviderController');
  *        schema:
  *          type: bolean
  *        required: false
+ *      - in: query
+ *        name: create_at
+ *        schema:
+ *          type: date
+ *      - in: query
+ *        name: start_create_at
+ *        schema: 
+ *          type: date
+ *      - in: query
+ *        name: end_create_at
+ *        schema:
+ *          type: date
  *     responses:
  *       200:
  *         description: Provider data
@@ -53,18 +65,32 @@ router.get('/', authMiddleware, providerController.filter);
  *     requestBody:
  *      required: true
  *      content:
- *          application/json:
+ *          application/x-www-form-urlencoded:
  *              schema:
  *                  type: object
+ *                  required:
+ *                      - prov_code
+ *                      - firstname
+ *                      - lastname
+ *                      - active
  *                  properties:
  *                      prov_code:
  *                          type: string
+ *                          description: provider code
+ *                          example: PROV001
  *                      firstname:
  *                          type: string
+ *                          description: provider first name
+ *                          example: Jonh
  *                      lastname:
  *                          type: string
+ *                          description: provider last name
+ *                          example: Dow
  *                      active:
  *                          type: boolean
+ *                          enum: [true, false]
+ *                          description: provider status active or inactive
+ *                          example: true
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -75,7 +101,7 @@ router.get('/', authMiddleware, providerController.filter);
  *       400:
  *         description: Invalid token
  */
-router.post('/', authMiddleware, providerController.create);
+router.post('/', authMiddleware, createValidator, providerController.create);
 
 /**
  * @swagger
@@ -93,9 +119,14 @@ router.post('/', authMiddleware, providerController.create);
  *     requestBody:
  *      required: true
  *      content:
- *          application/json:
+ *          application/x-www-form-urlencoded:
  *              schema:
  *                  type: object
+ *                  required: 
+ *                      - prov_code
+ *                      - firstname
+ *                      - lastname
+ *                      - active
  *                  properties:
  *                     prov_code:
  *                      type: string
@@ -105,6 +136,7 @@ router.post('/', authMiddleware, providerController.create);
  *                      type: string
  *                     active:
  *                      type: boolean
+ *                      enum: [true, false]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -115,7 +147,7 @@ router.post('/', authMiddleware, providerController.create);
  *       400:
  *         description: Invalid token
  */
-router.put('/:id', authMiddleware, providerController.update);
+router.put('/:id', authMiddleware, updateValidator, providerController.update);
 
 /**
  * @swagger

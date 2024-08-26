@@ -41,6 +41,7 @@ exports.update = async (req, res) => {
       BadRequest(errors, res);
     } else {
       req.body.user_id = req.user.id;
+      req.body.files = req.files;
       await repository.Update(req.body, req.params);
       Ok("Product updated", res);
     }

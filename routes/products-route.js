@@ -134,12 +134,40 @@ router.post('/', authMiddleware, upload.array('images') , productCreateValidator
 
 /**
  * @swagger
- * /products:
+ * /products/{id}:
  *   put:
  *     summary: Update product data
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *      - in: path
+ *        name: id
+ *        scheme: 
+ *          type: integer
+ *        description: product identificator 
+ *        required: true
+ *     requestBody:
+ *      required: true
+ *      content:
+ *          multipart/form-data:
+ *              schema:
+ *                  type: object
+ *                  properties:
+ *                      sku:
+ *                          type: string
+ *                      name:
+ *                          type: string
+ *                      brand_id:
+ *                          type: integer
+ *                      active:
+ *                          type: boolean
+ *                          enum: [true, false]
+ *                      images:
+ *                          type: array
+ *                          items:
+ *                              type: string
+ *                              format: binary
  *     responses:
  *       200:
  *         description: Update product
@@ -148,14 +176,20 @@ router.post('/', authMiddleware, upload.array('images') , productCreateValidator
  *       400:
  *         description: Invalid token
  */
-router.put('/:id', authMiddleware, productUpdateValidator, productsController.update);
+router.put('/:id', authMiddleware, upload.array('images'), productUpdateValidator, productsController.update);
 
 /**
  * @swagger
- * /products:
+ * /products/{id}:
  *   delete:
  *     summary: Delete product data
  *     tags: [Products]
+ *     parameters:
+ *      - in: path
+ *        name: id
+ *        scheme: 
+ *          type: integer
+ *        required: true
  *     security:
  *       - bearerAuth: []
  *     responses:

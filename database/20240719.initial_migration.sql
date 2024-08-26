@@ -657,3 +657,4 @@ FROM products AS p
 INNER JOIN brands AS b ON (b.id = p.brand_id)
 LEFT JOIN inventory AS  i ON (p.id = i.product_id)
 WHERE p.delete_at is null 
+
