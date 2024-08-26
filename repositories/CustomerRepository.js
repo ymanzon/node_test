@@ -1,12 +1,28 @@
 const db = require("../config/db");
 const { Op } = require("sequelize");
-const { CustomerModel, CustomerModelView } = require("../models/customer.model");
-const { CreateAction, UpdateAction, DeleteAction }  = require ('../services/LogService');
+const {
+  CustomerModel,
+  CustomerModelView,
+} = require("../models/customer.model");
+const {
+  CreateAction,
+  UpdateAction,
+  DeleteAction,
+} = require("../services/LogService");
+
+exports.ById = async (body) => {
+  console.log(body)
+  const { id, user_id } = body;
+
+  return await CustomerModelView.findAll({ where: { id: id } });
+};
 
 exports.Create = async (body) => {
   const { cust_code, firstname, lastname, active, user_id } = body;
 
-  let results = await CustomerModel.findOne({ where: { cust_code: cust_code } });
+  let results = await CustomerModel.findOne({
+    where: { cust_code: cust_code },
+  });
 
   if (results) {
     throw Error(`Customer code '${cust_code}' already exists.`);
@@ -15,7 +31,7 @@ exports.Create = async (body) => {
   await CustomerModel.create({
     cust_code: cust_code,
     firstname: firstname,
-    lastname:lastname,
+    lastname: lastname,
     active: active == "true" ? 1 : 0,
     user_id: user_id,
   });
@@ -23,12 +39,12 @@ exports.Create = async (body) => {
   let logMesage = {
     cust_code: cust_code,
     firstname: firstname,
-    lastname:lastname,
+    lastname: lastname,
     active: active == "true" ? 1 : 0,
     user_id: user_id,
-  }
+  };
 
-  await CreateAction(logMesage, user_id, 'CUSTOMERS');
+  await CreateAction(logMesage, user_id, "CUSTOMERS");
 };
 
 exports.Retrive = async (body) => {
@@ -44,8 +60,10 @@ exports.Retrive = async (body) => {
   } = body;
 
   let parameters = [];
-  if (cust_code) parameters.push({ cust_code: { [Op.like]: `%${cust_code}%` } });
-  if (firstname) parameters.push({ firstname: { [Op.like]: `%${firstname}%` } });
+  if (cust_code)
+    parameters.push({ cust_code: { [Op.like]: `%${cust_code}%` } });
+  if (firstname)
+    parameters.push({ firstname: { [Op.like]: `%${firstname}%` } });
   if (lastname) parameters.push({ lastname: { [Op.like]: `%${lastname}%` } });
 
   if (active) parameters.push({ active: active == "true" ? 1 : 0 });
@@ -60,18 +78,18 @@ exports.Retrive = async (body) => {
     parameters.push({ create_at: { [Op.lte]: create_at_end } });
   }
 
-  if (start_create_at) //<= gte
-  {
+  if (start_create_at) {
+    //<= gte
     let create_at_start = new Date(start_create_at);
     parameters.push({ create_at: { [Op.gte]: create_at_start } });
   }
 
-  if (end_create_at) //>= lte
-  {
+  if (end_create_at) {
+    //>= lte
     let create_at_end = new Date(end_create_at);
     parameters.push({ create_at: { [Op.lte]: create_at_end } });
   }
-  
+
   const results = await CustomerModelView.findAll({ where: parameters });
 
   return results;
@@ -85,7 +103,7 @@ exports.Update = async (body, params) => {
     where: {
       cust_code: cust_code,
       firstname: firstname,
-      lastname:lastname,
+      lastname: lastname,
       id: {
         [Op.ne]: id,
       },
@@ -129,6 +147,8 @@ exports.Delete = async (params) => {
   }
 
   let customer = await CustomerModel.findByPk(id);
+
+  if(customer.delete_at) throw Error (`Customer not exist's`);
 
   customer.delete_at = Date.now();
   customer.user_id = params.user_id;

@@ -7,10 +7,10 @@ const { createValidator, updateValidator } = require('../validators/CustomerVali
 
 /**
  * @swagger
- * /brands/{id}:
+ * /customers/{id}:
  *   get:
- *     summary: ger braand by id
- *     tags: [Brands]
+ *     summary: find customer by id
+ *     tags: [Customers]
  *     parameters:
  *       - in: query
  *         name: id
@@ -22,7 +22,7 @@ const { createValidator, updateValidator } = require('../validators/CustomerVali
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Update brand
+ *         description: success
  *       401:
  *         description: Access denied. No token provided.
  *       400:
@@ -44,21 +44,44 @@ router.get('/:id', authMiddleware, customersController.findById);
  *        schema:
  *            type: string
  *        required: false
+ *        description: customer code
  *      - in: query
  *        name: firstname
  *        schema:
  *            type: string
  *        required: false
+ *        description: customer fisrt name
  *      - in: query
  *        name: lastname
  *        schema:
  *            type: string
  *        required: false
+ *        description: customer last name
  *      - in: query
  *        name: active
  *        schema:
  *          type: bolean
+ *          enum: [true, false]
  *        required: false
+ *        description: customer active status
+ *      - in: query
+ *        name: create_at
+ *        schema:
+ *          type: date
+ *        required: false
+ *        description: create at customer
+ *      - in: query
+ *        name: start_create_at
+ *        schema:
+ *          type: date
+ *        required: false
+ *        descripcion: start create at customer
+ *      - in: query
+ *        name: end_query_at
+ *        schema:
+ *          type: date
+ *        required: false
+ *        description: end create at customer
  *     responses:
  *       200:
  *         description: Customer data
@@ -78,18 +101,32 @@ router.get('/', authMiddleware, customersController.filter);
  *     requestBody:
  *      required: true
  *      content:
- *          application/json:
+ *          application/x-www-form-urlencoded:
  *              schema:
  *                  type: object
+ *                  required:
+ *                      - cust_code
+ *                      - firstname
+ *                      - lastname
+ *                      - active
  *                  properties:
  *                      cust_code:
  *                          type: string
+ *                          description: cust_code min 3 max 10
+ *                          example: C000000001
  *                      firstname:
  *                          type: string
+ *                          descrition: firstname of customer
+ *                          example: Joe
  *                      lastname:
  *                          type: string
+ *                          description: lastname of customer
+ *                          example: Doe
  *                      active:
  *                          type: boolean
+ *                          enum: [true, false]
+ *                          example: true
+ *                          description: active customer or inactive customer in true or false
  *     security:
  *       - bearerAuth: []
  *     responses:

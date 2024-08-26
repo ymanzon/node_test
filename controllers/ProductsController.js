@@ -15,12 +15,15 @@ exports.filter = async (req, res) => {
 
 ///POST
 exports.create = async (req, res, next) => {
+
   try {
     const errors = ValidModel(req);
     if (errors != null) {
       BadRequest(errors, res);
     } else {
+      console.log(req.files);
       req.body.user_id = req.user.id;
+      req.body.files = req.files;
       await repository.Create(req.body);
       Ok("Product regiter", res);
     }

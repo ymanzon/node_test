@@ -30,7 +30,6 @@ exports.Create = async (body) => {
 
 //GetById
 exports.ById = async (body) => {
-  console.log(body);
   const { id, user_id} = body;
   return await BrandViewModel.findAll({ where: {id : id} });
 };

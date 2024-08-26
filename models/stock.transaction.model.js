@@ -57,10 +57,48 @@ const StockTransactionsModel = sequelize.define(
 );
 
 const StockTransactionsView = sequelize.define(
-  "StockTransations",
-  {},
+  "StockTransationsView",
   {
-    tableName: "stock_transactions",
+    id:{
+      type:DataTypes.INTEGER,
+      primaryKey: true
+    },
+    product_id:{
+      type:DataTypes.INTEGER
+    },
+    product_name:{
+      type:DataTypes.STRING
+    },
+    brand_id:{
+      type:DataTypes.STRING
+    },
+    brand_name:{
+      type:DataTypes.STRING
+    },
+    quantity:{
+      type:DataTypes.DECIMAL
+    },
+    type_move:{
+      type:DataTypes.STRING
+    },
+    active:{
+      type:DataTypes.BOOLEAN
+    },
+    processed:{
+      type:DataTypes.BOOLEAN
+    },
+    user_id:{
+      type:DataTypes.INTEGER
+    },
+    create_at:{
+      type:DataTypes.DATE
+    },
+    update_at:{
+      type:DataTypes.DATE
+    }
+  },
+  {
+    tableName: "stock_transactions_view",
     timestamps: false,
   }
 );

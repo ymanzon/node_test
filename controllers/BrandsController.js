@@ -5,7 +5,6 @@ const { ValidWithThrown, ValidModel } = require("../validators/Validator");
 
 exports.findById = async (req, res) => {
   try {
-    console.log(req.query);
     req.query.user_id = req.user.id;
     let brands = await repository.ById(req.query);
     Ok({ brands: brands }, res);

@@ -7,6 +7,9 @@ const { productCreateValidator, productUpdateValidator } = require("../validator
 
 const productsController = require('../controllers/ProductsController');
 
+const multer = require('multer');
+const storage = require('../middlewares/StorageMiddleware');
+const upload = multer({ storage: storage });
 
 /**
  * @swagger
@@ -32,6 +35,41 @@ router.get('/', authMiddleware, productsController.filter);
  *   post:
  *     summary: Create product data
  *     tags: [Products]
+ *     requestBody:
+ *      required: true
+ *      content:
+ *          multipart/form-data:
+ *              schema:
+ *                  type: object
+ *                  required:
+ *                      - sku
+ *                      - name
+ *                      - brand_id
+ *                      - active
+ *                  properties:
+ *                      sku:
+ *                          type: string
+ *                          description: product sku
+ *                          example: XPS0001
+ *                      name:
+ *                          type: string
+ *                          description: product name
+ *                          example: LAP DELL XPS15
+ *                      brand_id:
+ *                          type: integer
+ *                          description: brand id
+ *                      active:
+ *                          type: boolean
+ *                          description: active or inactive product
+ *                          enum: [true, false]
+ *                      images:
+ *                          type: array 
+ *                          description: images list for products 
+ *                          items:
+ *                              type: string
+ *                              format: binary
+ *                              description: image product image
+ *                                  
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -42,7 +80,7 @@ router.get('/', authMiddleware, productsController.filter);
  *       400:
  *         description: Invalid token
  */
-router.post('/', authMiddleware, productCreateValidator, productsController.create);
+router.post('/', authMiddleware, upload.array('images') , productCreateValidator, productsController.create);
 
 /**
  * @swagger

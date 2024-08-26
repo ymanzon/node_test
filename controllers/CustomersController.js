@@ -4,7 +4,6 @@ const { ValidWithThrown, ValidModel } = require("../validators/Validator");
 
 exports.findById = async (req, res) => {
   try {
-    //let brands = await repository.Retrive(req.query);
     req.query.user_id = req.user.id;
     let customers = await repository.ById( req.query );
     Ok({ customers: customers }, res);
@@ -16,7 +15,6 @@ exports.findById = async (req, res) => {
 //GET
 exports.filter = async (req, res) => {
   try {
-    //let brands = await repository.Retrive(req.query);
     req.query.user_id = req.user.id;
     let customers = await repository.Retrive( req.query );
     Ok({ customers: customers }, res);

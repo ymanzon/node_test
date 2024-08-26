@@ -593,4 +593,50 @@ ADD user_id BIGINT NOT NULL;
 ALTER TABLE purchases_orders
 ADD CONSTRAINT purchases_orders_users_fk 
 FOREIGN KEY (user_id) REFERENCES users(id)
+--hostorial de transacciones para produtos
+ALTER VIEW stock_transactions_view AS 
+SELECT 
+	st.id,
+	st.product_id,
+	p.name AS product_name,
+	st.quantity,
+	st.type_move,
+	st.active,
+	st.processed,
+	st.user_id, 
+	st.create_at,
+	st.update_at
+FROM stock_transactions st  
+INNER JOIN products p ON (st.product_id = p.id)
+WHERE
+	st.delete_at IS NULL;
 
+ALTER VIEW inventory_view AS 
+SELECT i.id, i.product_id, i.quantity, i.allow_negative, i.active, i.user_id, i.create_at, i.update_at,
+p.sku, p.name as product_name, p.brand_id,
+b.name as brand_name, b.photo_path
+FROM inventory i
+INNER JOIN products p ON (i.product_id = p.id)
+INNER JOIN brands b ON (p.brand_id = b.id)
+
+
+ALTER VIEW stock_transactions_view AS 
+SELECT 
+	st.id,
+	st.product_id,
+	p.sku,
+	p.`name` AS product_name,
+	p.brand_id,
+	b.`NAME` AS brand_name,
+	st.quantity,
+	st.type_move,
+	st.active,
+	st.processed,
+	st.user_id,
+	st.create_at,
+	st.update_at
+	FROM stock_transactions st 
+	INNER JOIN products p ON (st.product_id = p.id)
+	INNER JOIN brands b ON (p.brand_id = b.id)
+WHERE
+	st.delete_at IS NULL

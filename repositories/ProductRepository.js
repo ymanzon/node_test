@@ -1,6 +1,11 @@
-const db = require("../config/db");
+const {sequelize} = require("../config/sequelize.config");
+//const db = require("../config/db");
 const { Op } = require("sequelize");
 const { ProductModel, ProductView } = require("../models/product.model");
+
+const {ProductPhotosModel} = require('../models/product.photos.model');
+
+const { BrandModel } = require('../models/brand.model');
 const {
   CreateAction,
   UpdateAction,
@@ -17,8 +22,21 @@ exports.Create = async (body) => {
     },
   });
 
+  const transaction = await sequelize.transaction();
+
+  try {
+    
+  
+
   if (results)
     throw Error(`Product sku '${sku}' already exists.`);
+
+  let brand_list =  await BrandModel.findByPk(brand_id);
+
+  if(!brand_list)
+    throw Error(`Brand ${brand_id} not exists.`);
+
+ 
 
   let target = {
     sku: sku,
@@ -28,10 +46,31 @@ exports.Create = async (body) => {
     user_id: user_id,
   };
 
-  await ProductModel.create(target);
+  var product_create = await ProductModel.create(target, {transaction});
+
+  //console.log(body);
+   //images
+   if(body.files)
+    {
+      for (let photo of body.files) {
+        await ProductPhotosModel.create({
+          product_id : product_create.id,
+          photo_path: photo.path,
+          user_id: user_id
+        }, {transaction})
+      }
+    }
+
 
   //falta guardar el objeto en target, marca error.
   await CreateAction(target, user_id, "PRODUCTS");
+
+  await transaction.commit();
+
+  } catch (error) {
+    await transaction.rollback();
+    throw Error(error);
+  }
 };
 
 exports.Retrive = async (body) => {

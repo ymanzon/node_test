@@ -18,3 +18,23 @@ exports.create = async (req, res) => {
       BadRequest(error.message, res);
     }
   };
+//consulta el inventario existentes
+exports.filter = async (req, res) => {
+  try {
+    req.query.user_id = req.user.id;
+    let products = await repository.Retrive(req.query);
+    Ok({ products: products }, res);
+  } catch (error) {
+    BadRequest(error.message, res);
+  }
+};
+
+exports.getTransactions = async (req, res) => {
+  try {
+    req.query.user_id = req.user.id;
+    let products = await repository.GetTransactions(req.query);
+    Ok({ products: products }, res);
+  } catch (error) {
+    BadRequest(error.message, res);
+  }
+}
