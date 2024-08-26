@@ -1,5 +1,6 @@
 const { sequelize } = require("../config/sequelize.config");
 const { Sequelize, DataTypes } = require("sequelize");
+const { ProductPhotosModel } = require('../models/product.photos.model');
 
 // id, sku, name, brand_id, active, create_at, update_at, delete_at, user_id
 
@@ -102,5 +103,16 @@ const ProductView = sequelize.define(
     timestamps: false,
   }
 );
+
+ProductView.hasMany(ProductPhotosModel, {
+  foreignKey: 'product_id',
+  sourceKey: 'id',
+  as: 'photos' // Alias para acceder a las imágenes del producto
+});
+
+ProductPhotosModel.belongsTo(ProductView, {
+  foreignKey: 'product_id',
+  targetKey: 'id',
+})
 
 module.exports = { ProductModel, ProductView };

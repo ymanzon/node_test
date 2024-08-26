@@ -640,3 +640,20 @@ SELECT
 	INNER JOIN brands b ON (p.brand_id = b.id)
 WHERE
 	st.delete_at IS NULL
+
+
+ALTER VIEW products_view AS
+SELECT 
+	p.id, p.sku, 
+	p.name, 
+	p.brand_id, 
+	b.name AS brand_name, 
+	IFNULL(i.quantity, 0) AS quantity, 
+	p.active,p. 
+	user_id, 
+	p.create_at, 
+	p.update_at
+FROM products AS p
+INNER JOIN brands AS b ON (b.id = p.brand_id)
+LEFT JOIN inventory AS  i ON (p.id = i.product_id)
+WHERE p.delete_at is null 

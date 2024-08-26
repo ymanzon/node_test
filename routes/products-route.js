@@ -19,6 +19,56 @@ const upload = multer({ storage: storage });
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *      - in: query
+ *        name: sku
+ *        schema:
+ *          type: string
+ *        description: sku product
+ *      - in: query
+ *        name: name
+ *        schema:
+ *          type: string
+ *        description: product nammme
+ *      - in: query
+ *        name: brand_id
+ *        schema:
+ *          type: integer
+ *        description: brand id 
+ *      - in: query
+ *        name: brand_name
+ *        schema:
+ *          type: string
+ *        description: brand name
+ *      - in: query
+ *        name: active
+ *        schema:
+ *          type: boolean
+ *          enum: [true, false]
+ *        description: status active or not active from product
+ *      - in: query
+ *        name: user_id
+ *        schema:
+ *          type: integer
+ *        description: last user from create or updatet row
+ *      - in: query
+ *        name: create_at
+ *        schema:
+ *          type: date
+ *          format: date
+ *        description: create row date
+ *      - in: query
+ *        name: start_create_at
+ *        schema:
+ *          type: date
+ *          format: date
+ *        description: start create row date
+ *      - in: query
+ *        name: end_create_at
+ *        schema:
+ *          type: date
+ *          format: date
+ *        description: end create row date
  *     responses:
  *       200:
  *         description: Products data

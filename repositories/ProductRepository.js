@@ -101,7 +101,11 @@ exports.Retrive = async (body) => {
   if (create_at_after)
     parameters.push({ create_at: { [Op.gte]: create_at_after } });
 
-  const results = await ProductView.findAll({ where: parameters });
+  const results = await ProductView.findAll({ 
+    where: parameters , include:[{
+    model: ProductPhotosModel,
+    as: 'photos',
+  }]});
 
   return results;
 };
