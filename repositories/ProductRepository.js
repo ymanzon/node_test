@@ -5,7 +5,7 @@ const { ProductModel, ProductView } = require("../models/product.model");
 
 const {ProductPhotosModel} = require('../models/product.photos.model');
 
-const { BrandModel } = require('../models/brand.model');
+const { BrandModel, BrandViewModel } = require('../models/brand.model');
 const {
   CreateAction,
   UpdateAction,
@@ -31,10 +31,15 @@ exports.Create = async (body) => {
   if (results)
     throw Error(`Product sku '${sku}' already exists.`);
 
-  let brand_list =  await BrandModel.findByPk(brand_id);
+  let brand_list =  await BrandViewModel.findByPk(brand_id);
 
   if(!brand_list)
     throw Error(`Brand ${brand_id} not exists.`);
+
+  /*
+  if(brand_list.active)
+    throw Error(`Brand ${brand_id} not active.`);
+  */
 
  
 

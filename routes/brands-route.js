@@ -11,28 +11,19 @@ const upload = multer({ storage: storage });
 
 /**
  * @swagger
- * /brands/{id}:
- *   get:
- *     summary: ger braand by id
- *     tags: [Brands]
- *     parameters:
- *       - in: query
- *         name: id
- *         schema:
- *           type: integer
- *         required: true
- *         description: The id
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Update brand
- *       401:
- *         description: Access denied. No token provided.
- *       400:
- *         description: Invalid token
+ * components:
+ *  schemas:
+ *      use_active_filter:
+ *          type: boolean
+ *          enum:
+ *              - true
+ *              - false
+ *      use_date_filter:
+ *          type: string
+ *          enum:
+ *              - create_at
+ *              - update_at
  */
-router.get('/:id', authMiddleware, brandsController.findById);
 
 /**
  * @swagger
@@ -44,6 +35,11 @@ router.get('/:id', authMiddleware, brandsController.findById);
  *       - bearerAuth: []
  *     parameters:
  *      - in: query
+ *        name: id
+ *        schema:
+ *          type: integer
+ *        description: filter brand id
+ *      - in: query
  *        name: name
  *        schema:
  *            type: string
@@ -52,32 +48,33 @@ router.get('/:id', authMiddleware, brandsController.findById);
  *      - in: query
  *        name: active
  *        schema:
- *          type: boolean
- *          enum:  [true, false]
+ *          $ref: '#/components/schemas/use_active_filter'
  *        required: false
  *        description: filter by active
  *      - in: query
- *        name: create_at
- *        scheme:
- *          type: string
- *          format: date
+ *        name: filter_by
+ *        schema:
+ *          $ref: '#/components/schemas/use_date_filter'
  *        required: false
- *        description: Filter by the date of creation (yyyy-MM-dd )
- *        example: 2024-07-30
+ *        description: >
+ *          * use the selector to filter by creation date, update date, deletion date.
+ *          * 'creation_date' - creation date, filter row for creation date
+ *          * 'update_date' - Update date, filter row for update date
+ *          * 'deletion_date' - Deletion date, filter row for deletion date.
  *      - in: query
- *        name: start_create_at
+ *        name: start_date
  *        scheme:
  *          type: string
  *          format: date
  *        required: false
- *        description: Filter by the start date of creation (yyyy-MM-dd )
+ *        description: Filter by the start date (yyyy-MM-dd )
  *      - in: query
- *        name: end_create_at
+ *        name: end_date
  *        scheme:
  *          type: string
  *          format: date
  *        required: false
- *        description: Filter by the end date of creation (yyyy-MM-dd )
+ *        description: Filter by the end date (yyyy-MM-dd )
  *     responses:
  *       200:
  *         description: Brand data
@@ -220,5 +217,88 @@ router.put('/:id', authMiddleware, upload.single('image'), updateValidator, bran
  *         description: Invalid token
  */
 router.delete('/:id', authMiddleware, brandsController.delete);
+
+
+
+/**
+ * @swagger
+ * /brands/{id}:
+ *   get:
+ *     summary: Retrieve tasks by id (Additional Method)
+ *     tags: [Brands]
+ *     description: >
+ *      This endpoint allows you to retrieve brands filtered by their id **Additional Methods**.
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The id
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Update brand
+ *       401:
+ *         description: Access denied. No token provided.
+ *       400:
+ *         description: Invalid token
+ */
+router.get('/:id', authMiddleware, brandsController.findById);
+
+/**
+ * @swagger
+ * /brands/{id}/enable:
+ *  put:
+ *      summary: active the brand (Additional Method)
+ *      tags: [Brands]
+ *      description: >
+ *          active de brand id **Additional Method**
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            schema: 
+ *              type: integer
+ *            required: true
+ *            description: brand id
+ *      security:
+ *          - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: success
+ *          401: 
+ *              description: access denied. Invalid token
+ *          400:
+ *              description: Bad request
+ */
+router.put('/:id/enable', authMiddleware, brandsController.activate);
+
+/**
+ * @swagger
+ * /brands/{id}/disable:
+ *  put:
+ *      summary: deactivate the brand (Additional Method)
+ *      tags: [Brands]
+ *      description: >
+ *          deactive brand id **Additional Method**.
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            schema: 
+ *              type: integer
+ *            required: true
+ *            description: brand id
+ *      security:
+ *          - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: success
+ *          401: 
+ *              description: access denied. Invalid token
+ *          400:
+ *              description: Bad request
+ */
+router.put('/:id/disable', authMiddleware, brandsController.deactivate);
 
 module.exports = router;

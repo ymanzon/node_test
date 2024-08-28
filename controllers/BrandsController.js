@@ -70,3 +70,26 @@ exports.delete = async (req, res) => {
     BadRequest(error.message, res);
   }
 };
+
+
+exports.activate = async(req, res) => {
+  try {
+    req.params.user_id = req.user.id;
+    req.params.active = true;
+    await repository.ChangeStatusActive(req.params)
+    Ok(`Brand has been activated`, res)
+  } catch (error) {
+    BadRequest(error.message, res);
+  }
+}
+
+exports.deactivate = async(req, res) => {
+  try {
+    req.params.user_id = req.user.id;
+    req.params.active = false;
+    await repository.ChangeStatusActive(req.params)
+    Ok(`Brand has been deactivated`, res)
+  } catch (error) {
+    BadRequest(error.message, res);
+  }
+}

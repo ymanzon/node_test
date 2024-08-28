@@ -1,7 +1,7 @@
 const db = require("../config/db");
 const { Op } = require("sequelize");
 const { BrandModel, BrandViewModel } = require("../models/brand.model");
-const { CreateAction, UpdateAction, DeleteAction }  = require ('../services/LogService');
+const { CreateAction, UpdateAction, DeleteAction, RetriveAction }  = require ('../services/LogService');
 
 exports.Create = async (body) => {
   const { name, active, photo_path, user_id } = body;
@@ -31,16 +31,23 @@ exports.Create = async (body) => {
 //GetById
 exports.ById = async (body) => {
   const { id, user_id} = body;
+  const logMesage = {
+    user_id : user_id,
+    METRHOD: 'REGRIVE'
+  }
+  await RetriveAction(logMesage, user_id, 'BRAND');
   return await BrandViewModel.findAll({ where: {id : id} });
 };
 
 exports.Retrive = async (body) => {
+
+  
   const {
     name,
     active,
-    create_at,
-    start_create_at,
-    end_create_at,
+    filter_by,
+    start_date,
+    end_date,
     user_id,
   } = body;
 
@@ -49,29 +56,16 @@ exports.Retrive = async (body) => {
 
   if (active) parameters.push({ active: active == "true" ? 1 : 0 });
 
-  if (create_at) {
-    let create_at_start = new Date(create_at);
-    let create_at_end = new Date(create_at);
-
-    create_at_end.setDate(create_at_start.getDate() + 1);
-
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
-  }
-
-  //menores que  create_at <= lte 
-  if (start_create_at)
-  {
-    let create_at_start = new Date(start_create_at);
-
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-  }
-  //mayores que create_at >= gte
-  if (end_create_at)
-  {
-    let create_at_end = new Date(end_create_at);
-
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
+  
+  if (filter_by) {
+    const dateField = `${filter_by}`;
+    
+    if (start_date) 
+      parameters.push({ [dateField]: { [Op.gte]: new Date(start_date) } });
+    
+    if (end_date) 
+      parameters.push({ [dateField]: { [Op.lte]: new Date(end_date) } });
+    
   }
 
   //se utiliza la vista para recuperar la invormacion de las marcas
@@ -119,14 +113,14 @@ exports.Update = async (body, params) => {
 exports.Delete = async (params) => {
   const { id } = params;
 
-  let preExists = await BrandModel.findOne({
+  let preExists = await BrandViewModel.findOne({
     where: {
       id: id,
     },
   });
 
   if (!preExists) {
-    throw Error(`The brand ${id} not found.`);
+    throw Error(`The brand ${id} not exists.`);
   }
 
   let brand = await BrandModel.findByPk(id);
@@ -136,3 +130,30 @@ exports.Delete = async (params) => {
 
   await brand.save();
 };
+
+
+exports.ChangeStatusActive = async (params) => {
+  const { id, active, user_id } = params;
+
+  let preExists = await BrandViewModel.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!preExists) {
+    throw Error(`The brand ${id} not found.`);
+  }
+
+  if(preExists.active == active ){
+    throw Error(`The brand ${id} is ${active?'activated':'deactivated'}!`);
+  }
+
+  let brand = await BrandModel.findByPk(id);
+
+  brand.update_at = Date.now();
+  brand.active = active;
+  brand.user_id = user_id;
+
+  await brand.save();
+}

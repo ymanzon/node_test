@@ -1,12 +1,12 @@
 //const {config} = require('../config/sequelize.config');
-const BrandModel = require("../models/brand.model");
+const {BrandModel , BrandViewModel}= require("../models/brand.model");
 //const sequelize = require("../models/brand.model").sequelize;
 
 const CreateBrand = async (body, user_id) => {
   //try {
   const { name, active } = body;
 
-  const _brand = await BrandModel.findOne({ where: { name } });
+  const _brand = await BrandViewModel.findOne({ where: { name } });
   if (_brand) {
     throw Error("brand exist.");
   }
