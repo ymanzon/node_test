@@ -1,34 +1,22 @@
 const { sequelize } = require("../config/sequelize.config");
-const { Sequelize, DataTypes, DECIMAL } = require("sequelize");
+const { Sequelize, DataTypes } = require("sequelize");
 
-const InventoryModel = sequelize.define(
-  "InventoryModel",
+//stock_transactions_quantity_view
+const InventoryQuantityViewModel = sequelize.define(
+  "InventoryQuantityViewModel",
   {
-    id: {
-      type: DataTypes.BIGINT,
-      autoIncrement: true,
-      primaryKey: true,
+    product_id:{
+      type:DataTypes.BIGINT,
+      primaryKey: true
     },
-    product_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
-    quantity: { type: DataTypes.DECIMAL(10,2), defaultValue: 0.00 },
-    allow_negative: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-    active: { type: DataTypes.BOOLEAN, allowNull: false },
-    user_id: { type: DataTypes.BIGINT, allowNull: false },
-    create_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
-    },
-    update_at: { type: DataTypes.DATE, allowNull: true },
-    delete_at: { type: DataTypes.BIGINT, allowNull: true },
-  },
-  {
-    tableName: "inventory",
-    timestamps: false,
-  }
+    quantity:{
+      type: DataTypes.DECIMAL
+    }
+},
+{
+   tableName: "stock_transactions_quantity_view",
+   timestamps: false,
+}
 );
 
 /**id,, product_id, quantity, ACTIVE, user_id, create_at, update_at, sku, product_name, brand_id, brand_name, photo_path */
@@ -36,7 +24,8 @@ const InventoryView = sequelize.define(
   "InventoryView",
   {
     product_id:{
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
+      primaryKey: true,
     },
     product_name: {
       type:DataTypes.STRING
@@ -44,11 +33,12 @@ const InventoryView = sequelize.define(
     quantity: {
       type: DataTypes.DECIMAL
     },
-    active:{
-      type:DataTypes.BOOLEAN
+    active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false
     },
     user_id:{
-      type:DataTypes.INTEGER
+      type:DataTypes.BIGINT
     },
     create_at:{
       type:DataTypes.DATE
@@ -62,12 +52,12 @@ const InventoryView = sequelize.define(
     brand_id: {
       type:DataTypes.INTEGER
     },
-    brand_name:{
+    /*brand_name:{
       type:DataTypes.STRING
-    },
-    photo_path:{
+    },*/
+    /*photo_path:{
       type:DataTypes.STRING
-    }
+    }*/
   },
   {
     tableName: "inventory_view",
@@ -111,4 +101,4 @@ const InventoryView = sequelize.define(
   }
 );
 
-module.exports = { InventoryModel, InventoryView };
+module.exports = { InventoryView , InventoryQuantityViewModel};

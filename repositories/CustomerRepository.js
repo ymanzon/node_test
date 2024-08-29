@@ -53,9 +53,9 @@ exports.Retrive = async (body) => {
     firstname,
     lastname,
     active,
-    create_at,
-    start_create_at,
-    end_create_at,
+    filter_by,
+    start_date,
+    end_date,
     user_id,
   } = body;
 
@@ -68,26 +68,14 @@ exports.Retrive = async (body) => {
 
   if (active) parameters.push({ active: active == "true" ? 1 : 0 });
 
-  if (create_at) {
-    let create_at_start = new Date(create_at);
-    let create_at_end = new Date(create_at);
-
-    create_at_end.setDate(create_at_start.getDate() + 1);
-
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
-  }
-
-  if (start_create_at) {
-    //<= gte
-    let create_at_start = new Date(start_create_at);
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-  }
-
-  if (end_create_at) {
-    //>= lte
-    let create_at_end = new Date(end_create_at);
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
+  if (filter_by) {
+    const dateField = `${filter_by}`;
+    
+    if (start_date) 
+      parameters.push({ [dateField]: { [Op.gte]: new Date(start_date) } });
+    
+    if (end_date) 
+      parameters.push({ [dateField]: { [Op.lte]: new Date(end_date) } });
   }
 
   const results = await CustomerModelView.findAll({ where: parameters });
@@ -155,3 +143,30 @@ exports.Delete = async (params) => {
 
   await customer.save();
 };
+
+
+exports.ChangeStatusActive = async(params) => {
+  const { id, active, user_id } = params;
+
+  let preExists = await CustomerModelView.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!preExists) {
+    throw Error(`The customer ${id} not found.`);
+  }
+
+  if(preExists.active == active ){
+    throw Error(`The customer ${id} is ${active?'activated':'deactivated'}!`);
+  }
+
+  let customer = await CustomerModel.findByPk(id);
+
+  customer.update_at = Date.now();
+  customer.active = active;
+  customer.user_id = user_id;
+
+  await customer.save();
+}

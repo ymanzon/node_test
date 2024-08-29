@@ -4,7 +4,8 @@ const {
   StockTransactionsModel,
   StockTransactionsView,
 } = require("../models/stock.transaction.model");
-const { InventoryModel, InventoryView } = require("../models/inventory.model");
+const { InventoryView, InventoryQuantityViewModel } = require("../models/inventory.model");
+const { ProductView } = require('../models/product.model');
 const {
   CreateAction,
   UpdateAction,
@@ -15,6 +16,7 @@ const {
 
 
 exports.Create = async (body) => {
+
   const { product_id, quantity, type_move, active, user_id } = body;
 
   //const transaction = await Sequelize.transaction();
@@ -22,11 +24,24 @@ exports.Create = async (body) => {
 
   try {
     //buscar el registro del producto en el inventario, para crear o actualizar el registro
-    let inventary = await InventoryModel.findOne({
+    /*let inventary = await InventoryModel.findOne({
       where: {
         product_id: product_id,
       },
     });
+    */
+
+   //validar si es un movimiento de tipo out, se puede quedar el inventario en negativo
+   //consultar el producto si no esta eliminado
+   let product = await ProductView.findOne({where: {id: product_id}}); 
+   if(!product)
+    throw Error(`The product ${product_id} not found.`);
+
+   var inventory_current = await InventoryQuantityViewModel.findOne({where : { product_id : product_id}});
+
+
+   if(type_move == 'OUT' && (!inventory_current || inventory_current.quantity < quantity) )
+    throw Error(`The stock of product ${product.name} will remain in the negative.`);
 
     let movement = {
       product_id: product_id,
@@ -34,110 +49,50 @@ exports.Create = async (body) => {
       type_move: type_move,
       processed: true,
       user_id: user_id,
+      active: 1
     };
 
     await StockTransactionsModel.create(movement, { transaction });
 
-    //si no existe, se crea el inventario cualesquiera el tipo de movimiento
-    if (!inventary) {
-      await InventoryModel.create(
-        {
-          product_id: product_id,
-          quantity: quantity,
-          active: true,
-          user_id: user_id,
-        },
-        { transaction }
-      );
-    } else {
-      switch (type_move) {
-        case "IN":
-          //console.log(inventary);
-
-          inventary.quantity += Number( quantity );
-          inventary.user_id = user_id;
-          inventary.update_at = Date.now();
-          
-          await inventary.save({ transaction });
-          break;
-        case "OUT":
-          //console.log(inventary);
-
-          if (!inventary.allow_negative && inventary.quantity - quantity < 0)
-            throw Error(
-              `Product inentary for product ${inventary.product_id} not allow negative quantity`
-            );
-
-          inventary.quantity -= Number( quantity );
-          inventary.user_id = user_id;
-          inventary.update_at = Date.now();
-          
-          await inventary.save({ transaction });
-          break;
-        case "ADJ":
-          inventary.quantity = Number( quantity );
-          inventary.user_id = user_id;
-          inventary.update_at = Date.now();
-          await inventary.save({ transaction });
-          break;
-        default:
-          throw Error(` Move type not found ${type_move} in the list`);
-      }
-    }
-
-    console.log(body);
     await transaction.commit();
     console.log("COMMIT");
   } catch (error) {
     await transaction.rollback();
-
     throw error;
   }
 };
 
 exports.Retrive = async (body) => {
+
   const {
     product_id,
     quantity,
     active,
     sku,
     product_name,
-    brand_name,
-    create_at,
-    start_create_at,
-    end_create_at,
+    filter_by,
+    start_date,
+    end_date,
     user_id,
   } = body;
 
   let parameters = [];
   if (product_id) parameters.push({ product_id: product_id });
   if (quantity) parameters.push({ quantity: quantity });
-  if (active) parameters.push({ active: active });
+  //if (active) parameters.push({ active: active });
+  if (active) parameters.push({ active: active == "true" ? 1 : 0 });
   if (sku) parameters.push({ sku: { [Op.like]: `%${sku}%` } });
   if (product_name) parameters.push({ product_name: { [Op.like]: `%${product_name}%` } });
-  if (brand_name) parameters.push({ brand_name: { [Op.like]: `%${brand_name}%` } });
 
-  if (create_at) {
-    let create_at_start = new Date(create_at);
-    let create_at_end = new Date(create_at);
-
-    create_at_end.setDate(create_at_start.getDate() + 1);
-
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
-  }
-
-  if (start_create_at) {
-    //<= gte
-    let create_at_start = new Date(start_create_at);
-
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-  }
-  if (end_create_at) {
-    //>= lte
-    let create_at_end = new Date(end_create_at);
-
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
+  if (filter_by) {
+    const dateField = `${filter_by}`;
+    
+    if (start_date) 
+      parameters.push({ [dateField]: { [Op.gte]: new Date(start_date) } });
+    
+    if (end_date) 
+      parameters.push({ [dateField]: { [Op.lte]: new Date(end_date) } });
+    
   }
 
   //se utiliza la vista para recuperar la invormacion de las marcas
@@ -156,7 +111,6 @@ exports.GetTransactions = async (body) => {
     active,
     product_name,
     brand_id,
-    brand_name,
     type_move,
     create_at,
     start_create_at,
@@ -171,7 +125,7 @@ exports.GetTransactions = async (body) => {
   if(product_id) parameters.push({product_id:product_id});
   if(product_name) parameters.push({product_name: {[Op.like]: `%${product_name}%`}});
   if(brand_id) parameters.push({brand_id: brand_id});
-  if(brand_name) parameters.push( {brand_name:{[Op.like] : `%${brand_name}%`}} );
+  //if(bran//d_name) parameters.push( {brand_name:{[Op.like] : `%${brand_name}%`}} );
   if(type_move) parameters.push({ type_move: {[Op.like]: `%${type_move}%`}});
   if(active) product.push({active: active});
 

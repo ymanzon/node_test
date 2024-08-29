@@ -7,28 +7,19 @@ const { createValidator, updateValidator } = require('../validators/CustomerVali
 
 /**
  * @swagger
- * /customers/{id}:
- *   get:
- *     summary: find customer by id
- *     tags: [Customers]
- *     parameters:
- *       - in: query
- *         name: id
- *         schema:
- *           type: integer
- *         required: true
- *         description: The id
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: success
- *       401:
- *         description: Access denied. No token provided.
- *       400:
- *         description: Invalid token
+ * components:
+ *  schemas:
+ *      use_active_filter:
+ *          type: boolean
+ *          enum:
+ *              - true
+ *              - false
+ *      use_date_filter:
+ *          type: string
+ *          enum:
+ *              - create_at
+ *              - update_at
  */
-router.get('/:id', authMiddleware, customersController.findById);
 
 /**
  * @swagger
@@ -65,23 +56,29 @@ router.get('/:id', authMiddleware, customersController.findById);
  *        required: false
  *        description: customer active status
  *      - in: query
- *        name: create_at
+ *        name: filter_by
  *        schema:
- *          type: date
+ *          $ref: '#/components/schemas/use_date_filter'
  *        required: false
- *        description: create at customer
+ *        description: >
+ *          * use the selector to filter by creation date, update date, deletion date.
+ *          * 'creation_date' - creation date, filter row for creation date
+ *          * 'update_date' - Update date, filter row for update date
+ *          * 'deletion_date' - Deletion date, filter row for deletion date.
  *      - in: query
- *        name: start_create_at
- *        schema:
- *          type: date
+ *        name: start_date
+ *        scheme:
+ *          type: string
+ *          format: date
  *        required: false
- *        descripcion: start create at customer
+ *        description: Filter by the start date (yyyy-MM-dd )
  *      - in: query
- *        name: end_query_at
- *        schema:
- *          type: date
+ *        name: end_date
+ *        scheme:
+ *          type: string
+ *          format: date
  *        required: false
- *        description: end create at customer
+ *        description: Filter by the end date (yyyy-MM-dd )
  *     responses:
  *       200:
  *         description: Customer data
@@ -203,5 +200,92 @@ router.put('/:id', authMiddleware, updateValidator, customersController.update);
  *         description: Invalid token
  */
 router.delete('/:id', authMiddleware, customersController.delete);
+
+
+/**
+ * @swagger
+ * /customers/{id}:
+ *   get:
+ *     summary: find customer by id (Additional Method)
+ *     tags: [Customers]
+ *     description: >
+ *      retrive only customer id **Additional Method**
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The id
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: success
+ *       401:
+ *         description: Access denied. No token provided.
+ *       400:
+ *         description: Invalid token
+ */
+router.get('/:id', authMiddleware, customersController.findById);
+
+
+/**
+ * @swagger
+ * /customers/{id}/enable:
+ *  put:
+ *      summary: activate the customer (Additional Method)
+ *      tags: [Customers]
+ *      description: >
+ *          deactive customer id **Additional Method**.
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            schema: 
+ *              type: integer
+ *            required: true
+ *            description: customer id
+ *      security:
+ *          - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: success
+ *          401: 
+ *              description: access denied. Invalid token
+ *          400:
+ *              description: Bad request
+ */
+router.put("/:id/enable", authMiddleware, customersController.activate)
+
+/**
+ * @swagger
+ * /customers/{id}/disable:
+ *  put:
+ *      summary: deactivate the customer (Additional Method)
+ *      tags: [Customers]
+ *      description: >
+ *          deactive customer id **Additional Method**.
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            schema: 
+ *              type: integer
+ *            required: true
+ *            description: customer id
+ *      security:
+ *          - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: success
+ *          401: 
+ *              description: access denied. Invalid token
+ *          400:
+ *              description: Bad request
+ */
+router.put("/:id/disable", authMiddleware, customersController.deactivate)
+
+
+
+
 
 module.exports = router;

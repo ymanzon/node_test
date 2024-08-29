@@ -658,3 +658,117 @@ INNER JOIN brands AS b ON (b.id = p.brand_id)
 LEFT JOIN inventory AS  i ON (p.id = i.product_id)
 WHERE p.delete_at is null 
 
+CREATE VIEW stock_transactions_quantity_view AS
+SELECT 
+    product_id,
+    SUM(CASE 
+        WHEN type_move = 'IN' THEN quantity
+        WHEN type_move = 'OUT' THEN -quantity
+        ELSE 0
+    END) AS quantity
+FROM 
+    stock_transactions
+GROUP BY 
+    product_id;
+
+
+CREATE VIEW stock_transactions_dates AS
+SELECT 
+    product_id,
+    MIN(create_at) AS create_at,
+    MAX(create_at) AS update_at
+FROM 
+    stock_transactions
+GROUP BY 
+    product_id;
+
+DROP VIEW stock_transactions_dates
+
+CREATE VIEW stock_transactions_dates_view AS
+SELECT 
+    product_id,
+    MIN(create_at) AS create_at,
+    MAX(create_at) AS update_at
+FROM 
+    stock_transactions
+GROUP BY 
+    product_id;
+
+
+ALTER VIEW stock_transactions_quantity_view AS
+SELECT 
+    st.product_id,
+    SUM(CASE 
+        WHEN type_move = 'IN' THEN st.quantity
+        WHEN type_move = 'OUT' THEN -st.quantity
+        ELSE 0
+    END) AS quantity
+FROM 
+    stock_transactions st
+INNER JOIN products_view AS pv ON (st.product_id = pv.id)
+GROUP BY 
+    product_id;
+
+
+ALTER VIEW stock_transactions_dates_view AS
+SELECT 
+    st.product_id,
+    MIN(st.create_at) AS create_at,
+    MAX(st.create_at) AS update_at
+FROM 
+   stock_transactions AS st
+	INNER JOIN products_view AS pv ON (st.product_id = pv.id)
+GROUP BY 
+    product_id;
+
+ALTER VIEW inventory_view AS
+SELECT 
+    p.id AS product_id,
+    p.sku,
+    p.name,
+    p.active,
+    p.user_id,
+    COALESCE(pq.quantity, 0) AS quantity,
+    pd.create_at,
+    pd.update_at
+FROM 
+    products AS p
+LEFT JOIN 
+    stock_transactions_quantity_view AS pq ON p.id = pq.product_id
+LEFT JOIN 
+    stock_transactions_dates_view AS pd ON p.id = pd.product_id;
+
+
+DROP TABLE inventory;
+
+ALTER VIEW products_view AS
+SELECT 
+	p.id, p.sku, 
+	p.name, 
+	p.brand_id, 
+	b.name AS brand_name,  
+	p.active,p. 
+	user_id, 
+	p.create_at, 
+	p.update_at
+FROM products AS p
+INNER JOIN brands AS b ON (b.id = p.brand_id)
+WHERE p.delete_at is NULL 
+
+
+ALTER VIEW inventory_view AS 
+SELECT 
+    p.id AS product_id,
+    p.sku,
+    p.name,
+    p.active,
+    p.user_id,
+    COALESCE(pq.quantity, 0) AS quantity,
+    pd.create_at,
+    pd.update_at
+FROM 
+    products_view AS p
+LEFT JOIN 
+    stock_transactions_quantity_view AS pq ON p.id = pq.product_id
+LEFT JOIN 
+    stock_transactions_dates_view AS pd ON p.id = pd.product_id 

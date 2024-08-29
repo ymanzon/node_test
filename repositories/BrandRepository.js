@@ -4,6 +4,7 @@ const { BrandModel, BrandViewModel } = require("../models/brand.model");
 const { CreateAction, UpdateAction, DeleteAction, RetriveAction }  = require ('../services/LogService');
 
 exports.Create = async (body) => {
+  console.log(body);
   const { name, active, photo_path, user_id } = body;
 
   let results = await BrandModel.findOne({ where: { name: name } });
@@ -40,8 +41,6 @@ exports.ById = async (body) => {
 };
 
 exports.Retrive = async (body) => {
-
-  
   const {
     name,
     active,
