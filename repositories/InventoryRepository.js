@@ -5,7 +5,7 @@ const {
   StockTransactionsView,
 } = require("../models/stock.transaction.model");
 const { InventoryView, InventoryQuantityViewModel } = require("../models/inventory.model");
-const { ProductView } = require('../models/product.model');
+const { ProductView, ProductModel } = require('../models/product.model');
 const {
   CreateAction,
   UpdateAction,
@@ -154,4 +154,30 @@ exports.GetTransactions = async (body) => {
   // 
   //
   return await StockTransactionsView.findAll({ where: parameters });
+}
+
+exports.ChangeStatusActive = async (params) => {
+  const { id, active, user_id } = params;
+
+  let preExists = await ProductView.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!preExists) {
+    throw Error(`The product ${id} not found.`);
+  }
+
+  if(preExists.active == active ){
+    throw Error(`The product ${id} is ${active?'activated':'deactivated'}!`);
+  }
+
+  let brand = await ProductModel.findByPk(id);
+
+  brand.update_at = Date.now();
+  brand.active = active;
+  brand.user_id = user_id;
+
+  await brand.save();
 }

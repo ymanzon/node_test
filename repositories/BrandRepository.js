@@ -3,8 +3,10 @@ const { Op } = require("sequelize");
 const { BrandModel, BrandViewModel } = require("../models/brand.model");
 const { CreateAction, UpdateAction, DeleteAction, RetriveAction }  = require ('../services/LogService');
 
+const { generalFiltersParams } = require('../commons/general.filters.params');
+
 exports.Create = async (body) => {
-  console.log(body);
+  
   const { name, active, photo_path, user_id } = body;
 
   let results = await BrandModel.findOne({ where: { name: name } });
@@ -41,31 +43,22 @@ exports.ById = async (body) => {
 };
 
 exports.Retrive = async (body) => {
+  let parameters = generalFiltersParams(body)
+
   const {
+    id,
     name,
-    active,
+    /*active,
     filter_by,
     start_date,
-    end_date,
+    end_date,*/
     user_id,
   } = body;
 
-  let parameters = [];
-  if (name) parameters.push({ name: { [Op.like]: `%${name}%` } });
-
-  if (active) parameters.push({ active: active == "true" ? 1 : 0 });
-
   
-  if (filter_by) {
-    const dateField = `${filter_by}`;
-    
-    if (start_date) 
-      parameters.push({ [dateField]: { [Op.gte]: new Date(start_date) } });
-    
-    if (end_date) 
-      parameters.push({ [dateField]: { [Op.lte]: new Date(end_date) } });
-    
-  }
+  //let parameters = [];
+  if (id) parameters.push({ id: id });
+  if (name) parameters.push({ name: { [Op.like]: `%${name}%` } });
 
   //se utiliza la vista para recuperar la invormacion de las marcas
   const results = await BrandViewModel.findAll({ where: parameters });

@@ -1,16 +1,18 @@
-const {sequelize} = require("../config/sequelize.config");
+const { sequelize } = require("../config/sequelize.config");
 //const db = require("../config/db");
 const { Op } = require("sequelize");
 const { ProductModel, ProductView } = require("../models/product.model");
 
-const {ProductPhotosModel} = require('../models/product.photos.model');
+const { ProductPhotosModel } = require("../models/product.photos.model");
 
-const { BrandModel, BrandViewModel } = require('../models/brand.model');
+const { BrandModel, BrandViewModel } = require("../models/brand.model");
 const {
   CreateAction,
   UpdateAction,
   DeleteAction,
 } = require("../services/LogService");
+
+const{ generalFiltersParams } = require('../commons/general.filters.params');
 
 exports.Create = async (body) => {
   const { sku, name, brand_id, active, user_id } = body;
@@ -18,60 +20,52 @@ exports.Create = async (body) => {
   let results = await ProductModel.findOne({
     where: {
       sku: sku,
-      //name: name,
     },
   });
 
   const transaction = await sequelize.transaction();
 
   try {
-    
-  
+    if (results) throw Error(`Product sku '${sku}' already exists.`);
 
-  if (results)
-    throw Error(`Product sku '${sku}' already exists.`);
+    let brand_list = await BrandViewModel.findByPk(brand_id);
 
-  let brand_list =  await BrandViewModel.findByPk(brand_id);
+    if (!brand_list) throw Error(`Brand ${brand_id} not exists.`);
 
-  if(!brand_list)
-    throw Error(`Brand ${brand_id} not exists.`);
-
-  /*
+    /*
   if(brand_list.active)
     throw Error(`Brand ${brand_id} not active.`);
   */
 
- 
+    let target = {
+      sku: sku,
+      name: name,
+      brand_id: brand_id,
+      active: active,
+      user_id: user_id,
+    };
 
-  let target = {
-    sku: sku,
-    name: name,
-    brand_id: brand_id,
-    active: active,
-    user_id: user_id,
-  };
+    var product_create = await ProductModel.create(target, { transaction });
 
-  var product_create = await ProductModel.create(target, {transaction});
-
-  //console.log(body);
-   //images
-   if(body.files)
-    {
+    //console.log(body);
+    //images
+    if (body.files) {
       for (let photo of body.files) {
-        await ProductPhotosModel.create({
-          product_id : product_create.id,
-          photo_path: photo.path,
-          user_id: user_id
-        }, {transaction})
+        await ProductPhotosModel.create(
+          {
+            product_id: product_create.id,
+            photo_path: photo.path,
+            user_id: user_id,
+          },
+          { transaction }
+        );
       }
     }
 
+    //falta guardar el objeto en target, marca error.
+    await CreateAction(target, user_id, "PRODUCTS");
 
-  //falta guardar el objeto en target, marca error.
-  await CreateAction(target, user_id, "PRODUCTS");
-
-  await transaction.commit();
-
+    await transaction.commit();
   } catch (error) {
     await transaction.rollback();
     throw Error(error);
@@ -79,38 +73,24 @@ exports.Create = async (body) => {
 };
 
 exports.Retrive = async (body) => {
-  const { sku, name, brand_id, active, create_at, create_at_after, create_at_before } = body;
+  //const { sku, name, brand_id, active, filter_by, start_date, end_date } = body;
+  let parameters = generalFiltersParams(body);
 
-  let parameters = []
-  if(sku) parameters.push({ sku:{[Op.like] : `%${sku}%`}  });
-  if(name) parameters.push({ name:{[Op.like] : `%${name}%`} });
-  if(brand_id) parameters.push({brand_id: brand_id});
-  if (active) parameters.push({ active: active == "true" ? 1 : 0 });
-  if (create_at) {
-    let create_at_start = new Date(create_at);
-    let create_at_end = new Date(create_at);
+  const { sku, name, brand_id } = body;
 
-    create_at_end.setDate(create_at_start.getDate() + 1);
+  if (sku) parameters.push({ sku: { [Op.like]: `%${sku}%` } });
+  if (name) parameters.push({ name: { [Op.like]: `%${name}%` } });
+  if (brand_id) parameters.push({ brand_id: brand_id });
 
-    console.log(create_at_start);
-    console.log(create_at_end);
-
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
-  }
-
-  //menores que  create_at <=
-  if (create_at_before)
-    parameters.push({ create_at: { [Op.lte]: create_at_before } });
-  //mayores que create_at >=
-  if (create_at_after)
-    parameters.push({ create_at: { [Op.gte]: create_at_after } });
-
-  const results = await ProductView.findAll({ 
-    where: parameters , include:[{
-    model: ProductPhotosModel,
-    as: 'photos',
-  }]});
+  const results = await ProductView.findAll({
+    where: parameters,
+    include: [
+      {
+        model: ProductPhotosModel,
+        as: "photos",
+      },
+    ],
+  });
 
   return results;
 };
@@ -120,59 +100,60 @@ exports.Update = async (body, params) => {
   const { sku, name, brand_id, active, user_id } = body;
 
   let preExists = await ProductView.findOne({
-    where :{
-      sku:sku,
-      id:{
-        [Op.ne] :id
-      }
-    }
+    where: {
+      sku: sku,
+      id: {
+        [Op.ne]: id,
+      },
+    },
   });
 
-  if(preExists) throw Error ( `The brand cannot be updated because the sku '${sku}' already exists.` );
+  if (preExists)
+    throw Error(
+      `The brand cannot be updated because the sku '${sku}' already exists.`
+    );
 
   const product = await ProductModel.findByPk(id);
 
-  if(!product)
-    throw Error(`The product ${id} not found.`);
+  if (!product) throw Error(`The product ${id} not found.`);
 
   let changes = {
-    tableName : "products",
-    changes:[
+    tableName: "products",
+    changes: [
       {
-        columnName:"sku",
-        previus:product.sku,
-        current:sku
+        columnName: "sku",
+        previus: product.sku,
+        current: sku,
       },
       {
-        columnName:"name",
-      previus:product.name,
-      current:name
-    },
-    {
-      columnName:"active",
-      previus:product.active,
-      current:active
-    },
-    {
-      columnName:"user_id",
-      previus:product.user_id,
-      current:user_id
-    },
-    ]
+        columnName: "name",
+        previus: product.name,
+        current: name,
+      },
+      {
+        columnName: "active",
+        previus: product.active,
+        current: active,
+      },
+      {
+        columnName: "user_id",
+        previus: product.user_id,
+        current: user_id,
+      },
+    ],
   };
 
-  
-  product.name = name;
-  product.sku = sku;
-  product.active  = (active == true)?1:0;
+  product.name = name ?? product.name;
+  product.sku = sku ?? product.sku;
+  product.active = (active == true)? 1 : 0;
   product.update_at = Date.now();
   product.user_id = user_id;
+  product.brand_id = brand_id ?? product.brand_id;
 
   //TODO
   await product.save();
 
   await UpdateAction(changes, user_id, "PRODUCTS");
-
 };
 
 exports.Delete = async (params) => {
@@ -192,19 +173,20 @@ exports.Delete = async (params) => {
 
   let delete_at = Date.now();
   let changes = {
-    tableName:"products",
-    changes:[
+    tableName: "products",
+    changes: [
       {
-        columnName:delete_at,
+        columnName: delete_at,
         previus: null,
-        current:delete_at
+        current: delete_at,
       },
-      {columnName:user_id,
+      {
+        columnName: user_id,
         previus: product.user_id,
-        current : params.user_id
-      }
-    ]
-  }
+        current: params.user_id,
+      },
+    ],
+  };
 
   product.delete_at = delete_at;
   product.user_id = params.user_id;
@@ -213,9 +195,40 @@ exports.Delete = async (params) => {
 
   await DeleteAction(changes, user_id, "PRODUCTS");
 
-  /*
-
-  let query = "UPDATE products SET user_id = ? delete_at = NOW() WHERE id = ? ";
-
-  await db.query(query, [user_id, id]);]*/
 };
+
+exports.ById = async (body) => {
+  const { id, user_id} = body;
+  const logMesage = {
+    user_id : user_id,
+    METRHOD: 'REGRIVE'
+  }
+  await RetriveAction(logMesage, user_id, 'PRODUCT');
+  return await ProductModel.findAll({ where: {id : id} });
+};
+
+exports.ChangeStatusActive = async (params) => {
+  const { id, active, user_id } = params;
+
+  let preExists = await ProductView.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!preExists) {
+    throw Error(`The product ${id} not found.`);
+  }
+
+  if(preExists.active == active ){
+    throw Error(`The product ${id} is ${active?'activated':'deactivated'}!`);
+  }
+
+  let product = await ProductModel.findByPk(id);
+
+  product.update_at = Date.now();
+  product.active = (active == 'true')?1:0;
+  product.user_id = user_id;
+
+  await product.save();
+}

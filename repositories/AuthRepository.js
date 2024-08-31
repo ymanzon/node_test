@@ -7,8 +7,6 @@ const {UserModel, UserView} = require('../models/user.model');
 exports.Auth = async (body) => {
     const { email, password } = body;
 
-    console.log(body);
-
     const user = await UserView.findOne({
       where :{
         email:email,
@@ -24,23 +22,15 @@ exports.Auth = async (body) => {
 
     if (!isPasswordValid) throw Error("Invalid credentials");
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: "1h"});
-      return {token: token};
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: "12h"});
+
+      return {
+        user: email,
+        token: token, 
+        date: Date.now(),
+        expiresIn: '12h'
+      };
     
-/*
-    const [rows] = await db.query(
-        "SELECT id, password FROM users WHERE email = ? and active = 1",
-        [email]
-      );
-      if (rows.length === 0) throw Error("Invalid credentials"); //return res.status(400).send("Invalid credentials");
-  
-      const user = rows[0];
-      const _isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) throw Error("Invalid credentials"); //return res.status(400).send("Invalid credentials");
-  
-      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: "1h"});
-      return {token: token};
-      */
 };
 
 //no se cambia este pq en el registro se hara en el controller de Users

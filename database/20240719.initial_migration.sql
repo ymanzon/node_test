@@ -772,3 +772,55 @@ LEFT JOIN
     stock_transactions_quantity_view AS pq ON p.id = pq.product_id
 LEFT JOIN 
     stock_transactions_dates_view AS pd ON p.id = pd.product_id 
+
+	alter table products
+MODIFY COLUMN create_at DATE 
+
+alter table products
+MODIFY COLUMN update_at DATE 
+
+alter table brands
+MODIFY COLUMN create_at DATE;
+    
+alter table brands
+MODIFY COLUMN update_at DATE;
+
+alter table customers
+MODIFY COLUMN create_at DATE;
+    
+alter table customers
+MODIFY COLUMN update_at DATE;
+
+alter table providers
+MODIFY COLUMN create_at DATE;
+    
+alter table providers
+MODIFY COLUMN update_at DATE;
+
+alter table purchases_orders
+MODIFY COLUMN create_at DATE;
+    
+alter table purchases_orders
+MODIFY COLUMN update_at DATE;
+
+alter table purchases_orders_details
+MODIFY COLUMN create_at DATE;
+    
+-- alter table purchases_orders_details MODIFY COLUMN update_at DATE;
+
+alter table sales_orders
+MODIFY COLUMN create_at DATE;
+    
+alter table sales_orders
+MODIFY COLUMN update_at DATE;
+
+alter table sales_orders_details MODIFY COLUMN create_at DATE;
+    
+-- alter table sales_orders_details MODIFY COLUMN update_at DATE;
+
+alter table stock_transactions
+MODIFY COLUMN create_at DATE;
+    
+alter table stock_transactions
+MODIFY COLUMN update_at DATE;
+

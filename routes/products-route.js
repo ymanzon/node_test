@@ -13,6 +13,22 @@ const upload = multer({ storage: storage });
 
 /**
  * @swagger
+ * components:
+ *  schemas:
+ *      use_active_filter:
+ *          type: boolean
+ *          enum:
+ *              - true
+ *              - false
+ *      use_date_filter:
+ *          type: string
+ *          enum:
+ *              - create_at
+ *              - update_at
+ */
+
+/**
+ * @swagger
  * /products:
  *   get:
  *     summary: Get products data
@@ -36,39 +52,35 @@ const upload = multer({ storage: storage });
  *          type: integer
  *        description: brand id 
  *      - in: query
- *        name: brand_name
- *        schema:
- *          type: string
- *        description: brand name
- *      - in: query
  *        name: active
  *        schema:
  *          type: boolean
  *          enum: [true, false]
  *        description: status active or not active from product
  *      - in: query
- *        name: user_id
+ *        name: filter_by
  *        schema:
- *          type: integer
- *        description: last user from create or updatet row
+ *          $ref: '#/components/schemas/use_date_filter'
+ *        required: false
+ *        description: >
+ *          * use the selector to filter by creation date, update date, deletion date.
+ *          * 'creation_date' - creation date, filter row for creation date
+ *          * 'update_date' - Update date, filter row for update date
+ *          * 'deletion_date' - Deletion date, filter row for deletion date.
  *      - in: query
- *        name: create_at
- *        schema:
- *          type: date
+ *        name: start_date
+ *        scheme:
+ *          type: string
  *          format: date
- *        description: create row date
+ *        required: false
+ *        description: Filter by the start date (yyyy-MM-dd )
  *      - in: query
- *        name: start_create_at
- *        schema:
- *          type: date
+ *        name: end_date
+ *        scheme:
+ *          type: string
  *          format: date
- *        description: start create row date
- *      - in: query
- *        name: end_create_at
- *        schema:
- *          type: date
- *          format: date
- *        description: end create row date
+ *        required: false
+ *        description: Filter by the end date (yyyy-MM-dd ) * 
  *     responses:
  *       200:
  *         description: Products data
@@ -201,5 +213,88 @@ router.put('/:id', authMiddleware, upload.array('images'), productUpdateValidato
  *         description: Invalid token
  */
 router.delete('/:id', authMiddleware, productsController.delete);
+
+
+/**
+ * @swagger
+ * /products/{id}:
+ *   get:
+ *     summary: Retrieve products by id (Additional Method)
+ *     tags: [Products]
+ *     description: >
+ *      This endpoint allows you to retrieve product filtered by their id **Additional Methods**.
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The id
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Update product
+ *       401:
+ *         description: Access denied. No token provided.
+ *       400:
+ *         description: Invalid token
+ */
+router.get('/:id', authMiddleware, productsController.findById);
+
+/**
+ * @swagger
+ * /products/{id}/enable:
+ *  put:
+ *      summary: active the product (Additional Method)
+ *      tags: [Products]
+ *      description: >
+ *          active de product id **Additional Method**
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            schema: 
+ *              type: integer
+ *            required: true
+ *            description: product id
+ *      security:
+ *          - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: success
+ *          401: 
+ *              description: access denied. Invalid token
+ *          400:
+ *              description: Bad request
+ */
+router.put('/:id/enable', authMiddleware, productsController.activate);
+
+/**
+ * @swagger
+ * /products/{id}/disable:
+ *  put:
+ *      summary: deactivate the product (Additional Method)
+ *      tags: [Products]
+ *      description: >
+ *          deactive product id **Additional Method**.
+ *      parameters:
+ *          - in: path
+ *            name: id
+ *            schema: 
+ *              type: integer
+ *            required: true
+ *            description: product id
+ *      security:
+ *          - bearerAuth: []
+ *      responses:
+ *          200:
+ *              description: success
+ *          401: 
+ *              description: access denied. Invalid token
+ *          400:
+ *              description: Bad request
+ */
+router.put('/:id/disable', authMiddleware, productsController.deactivate);
+
 
 module.exports = router;
