@@ -21,10 +21,15 @@ const ProviderModel = sequelize.define('ProviderModel', {
     },
     active: {
       type: DataTypes.BOOLEAN, // Sequelize usa BOOLEAN en lugar de BIT
+      allowNull:false
     },
     user_id :{
       type:DataTypes.BIGINT,
       allowNull:false,
+    },
+    brand_id:{
+      type:DataTypes.BIGINT,
+      allowNull:false
     },
     create_at: {
       type: DataTypes.DATE,
@@ -60,8 +65,13 @@ const ProviderModel = sequelize.define('ProviderModel', {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    brand_id:{
+      type:DataTypes.BIGINT,
+      allowNull:false,
+    },
     active: {
       type: DataTypes.BOOLEAN, // Sequelize usa BOOLEAN en lugar de BIT
+      allowNull: false,
     },
     create_at: {
       type: DataTypes.DATE,

@@ -229,7 +229,7 @@ router.delete('/:id', authMiddleware, brandsController.delete);
  *     description: >
  *      This endpoint allows you to retrieve brands filtered by their id **Additional Methods**.
  *     parameters:
- *       - in: query
+ *       - in: path
  *         name: id
  *         schema:
  *           type: integer

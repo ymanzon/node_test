@@ -31,6 +31,12 @@ const { createValidator, updateValidator } = require('../validators/CustomerVali
  *       - bearerAuth: []
  *     parameters:
  *      - in: query
+ *        name: id
+ *        schema:
+ *          type: integer
+ *        require: false
+ *        description: customer id
+ *      - in: query
  *        name: cust_code
  *        schema:
  *            type: string
@@ -211,7 +217,7 @@ router.delete('/:id', authMiddleware, customersController.delete);
  *     description: >
  *      retrive only customer id **Additional Method**
  *     parameters:
- *       - in: query
+ *       - in: path
  *         name: id
  *         schema:
  *           type: integer

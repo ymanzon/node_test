@@ -65,6 +65,7 @@ exports.delete = async (req, res) => {
 exports.findById = async (req, res) => {
   try {
     req.query.user_id = req.user.id;
+    req.query.id = req.params.id;
     let products = await repository.ById( req.query );
     Ok({ products: products }, res);
   } catch (error) {

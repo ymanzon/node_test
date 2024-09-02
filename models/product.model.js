@@ -104,15 +104,55 @@ const ProductView = sequelize.define(
   }
 );
 
-ProductView.hasMany(ProductPhotosModel, {
+const ProductsInventaryView = sequelize.define(
+  "ProductsInventaryView",
+  {
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+    },
+    sku: {
+      type: DataTypes.STRING,
+    },
+    name: {
+      type: DataTypes.STRING,
+    },
+    brand_id: {
+      type: DataTypes.BIGINT,
+    },
+    active: {
+      type: DataTypes.BOOLEAN,
+    },
+    create_at: {
+      type: DataTypes.DATE,
+    },
+    update_at: {
+      type: DataTypes.DATE,
+    },
+    user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
+    quantity:{
+      type: DataTypes.DECIMAL,
+    }
+  },
+  {
+    tableName: "products_inventary_view",
+    timestamps: false,
+  }
+);
+
+
+ProductsInventaryView.hasMany(ProductPhotosModel, {
   foreignKey: 'product_id',
   sourceKey: 'id',
   as: 'photos' // Alias para acceder a las imágenes del producto
 });
 
-ProductPhotosModel.belongsTo(ProductView, {
+ProductPhotosModel.belongsTo(ProductsInventaryView, {
   foreignKey: 'product_id',
   targetKey: 'id',
 })
 
-module.exports = { ProductModel, ProductView };
+module.exports = { ProductModel, ProductView, ProductsInventaryView};

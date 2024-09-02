@@ -10,8 +10,10 @@ const {
   DeleteAction,
 } = require("../services/LogService");
 
+const { generalFiltersParams } = require("../commons/general.filters.params");
+
 exports.ById = async (body) => {
-  console.log(body)
+  console.log(body);
   const { id, user_id } = body;
 
   return await CustomerModelView.findAll({ where: { id: id } });
@@ -48,35 +50,16 @@ exports.Create = async (body) => {
 };
 
 exports.Retrive = async (body) => {
-  const {
-    cust_code,
-    firstname,
-    lastname,
-    active,
-    filter_by,
-    start_date,
-    end_date,
-    user_id,
-  } = body;
+  let parameters = generalFiltersParams(body);
+  
+  const { id, cust_code, firstname, lastname } = body;
 
-  let parameters = [];
+  if (id) parameters.push({ id: id });
   if (cust_code)
     parameters.push({ cust_code: { [Op.like]: `%${cust_code}%` } });
   if (firstname)
     parameters.push({ firstname: { [Op.like]: `%${firstname}%` } });
   if (lastname) parameters.push({ lastname: { [Op.like]: `%${lastname}%` } });
-
-  if (active) parameters.push({ active: active == "true" ? 1 : 0 });
-
-  if (filter_by) {
-    const dateField = `${filter_by}`;
-    
-    if (start_date) 
-      parameters.push({ [dateField]: { [Op.gte]: new Date(start_date) } });
-    
-    if (end_date) 
-      parameters.push({ [dateField]: { [Op.lte]: new Date(end_date) } });
-  }
 
   const results = await CustomerModelView.findAll({ where: parameters });
 
@@ -136,7 +119,7 @@ exports.Delete = async (params) => {
 
   let customer = await CustomerModel.findByPk(id);
 
-  if(customer.delete_at) throw Error (`Customer not exist's`);
+  if (customer.delete_at) throw Error(`Customer not exist's`);
 
   customer.delete_at = Date.now();
   customer.user_id = params.user_id;
@@ -144,8 +127,7 @@ exports.Delete = async (params) => {
   await customer.save();
 };
 
-
-exports.ChangeStatusActive = async(params) => {
+exports.ChangeStatusActive = async (params) => {
   const { id, active, user_id } = params;
 
   let preExists = await CustomerModelView.findOne({
@@ -158,8 +140,10 @@ exports.ChangeStatusActive = async(params) => {
     throw Error(`The customer ${id} not found.`);
   }
 
-  if(preExists.active == active ){
-    throw Error(`The customer ${id} is ${active?'activated':'deactivated'}!`);
+  if (preExists.active == active) {
+    throw Error(
+      `The customer ${id} is ${active ? "activated" : "deactivated"}!`
+    );
   }
 
   let customer = await CustomerModel.findByPk(id);
@@ -169,4 +153,4 @@ exports.ChangeStatusActive = async(params) => {
   customer.user_id = user_id;
 
   await customer.save();
-}
+};

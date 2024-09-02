@@ -3,7 +3,7 @@ const { Op } = require("sequelize");
 
 exports.generalFiltersParams = ( body ) => {
 
-  const { active, filter_by, start_date, end_date } = body;
+  const { active, filter_by, start_date, end_date, user_id } = body;
 
   let parameters = [];
 
@@ -21,6 +21,9 @@ exports.generalFiltersParams = ( body ) => {
     if (end_date)
       parameters.push({ [dateField]: { [Op.lte]: new Date(end_date) } });
   }
+
+  if(user_id)
+    parameters.push({ user_id : user_id});
 
   return parameters;
 }

@@ -1,7 +1,7 @@
 const { sequelize } = require("../config/sequelize.config");
 //const db = require("../config/db");
 const { Op } = require("sequelize");
-const { ProductModel, ProductView } = require("../models/product.model");
+const { ProductModel, ProductView, ProductsInventaryView } = require("../models/product.model");
 
 const { ProductPhotosModel } = require("../models/product.photos.model");
 
@@ -10,6 +10,7 @@ const {
   CreateAction,
   UpdateAction,
   DeleteAction,
+  RetriveAction,
 } = require("../services/LogService");
 
 const{ generalFiltersParams } = require('../commons/general.filters.params');
@@ -76,13 +77,14 @@ exports.Retrive = async (body) => {
   //const { sku, name, brand_id, active, filter_by, start_date, end_date } = body;
   let parameters = generalFiltersParams(body);
 
-  const { sku, name, brand_id } = body;
+  const { id, sku, name, brand_id } = body;
 
+  if(id) parameters.push({id: id});
   if (sku) parameters.push({ sku: { [Op.like]: `%${sku}%` } });
   if (name) parameters.push({ name: { [Op.like]: `%${name}%` } });
   if (brand_id) parameters.push({ brand_id: brand_id });
 
-  const results = await ProductView.findAll({
+  const results = await ProductsInventaryView.findAll({
     where: parameters,
     include: [
       {
@@ -204,7 +206,7 @@ exports.ById = async (body) => {
     METRHOD: 'REGRIVE'
   }
   await RetriveAction(logMesage, user_id, 'PRODUCT');
-  return await ProductModel.findAll({ where: {id : id} });
+  return await ProductsInventaryView.findAll({ where: {id : id} });
 };
 
 exports.ChangeStatusActive = async (params) => {

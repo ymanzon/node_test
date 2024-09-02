@@ -37,6 +37,11 @@ const upload = multer({ storage: storage });
  *       - bearerAuth: []
  *     parameters:
  *      - in: query
+ *        name: id
+ *        schema: 
+ *          type: integer
+ *        description: id product
+ *      - in: query
  *        name: sku
  *        schema:
  *          type: string
@@ -81,6 +86,12 @@ const upload = multer({ storage: storage });
  *          format: date
  *        required: false
  *        description: Filter by the end date (yyyy-MM-dd ) * 
+ *      - in: query
+ *        name: user_id
+ *        scheme:
+ *          type: integer
+ *        required: false
+ *        description: user creation or last modified
  *     responses:
  *       200:
  *         description: Products data
@@ -224,7 +235,7 @@ router.delete('/:id', authMiddleware, productsController.delete);
  *     description: >
  *      This endpoint allows you to retrieve product filtered by their id **Additional Methods**.
  *     parameters:
- *       - in: query
+ *       - in: path
  *         name: id
  *         schema:
  *           type: integer

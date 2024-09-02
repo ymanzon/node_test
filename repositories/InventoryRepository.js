@@ -11,6 +11,7 @@ const {
   UpdateAction,
   DeleteAction,
 } = require("../services/LogService");
+const { generalFiltersParams } = require("../commons/general.filters.params");
 
 //const { StockTransactionsView } = require('../models/stock.transaction.model');
 
@@ -103,32 +104,36 @@ exports.Retrive = async (body) => {
 
 
 exports.GetTransactions = async (body) => {
+
+  let parameters = generalFiltersParams(body);
+
   const {
     id,
-    sku,
+    //sku,
     product_id,
     //quantity,
     active,
-    product_name,
-    brand_id,
+    //product_name,
+    //brand_id,
     type_move,
-    create_at,
-    start_create_at,
-    end_create_at,
+    //create_at,
+    //start_create_at,
+    //end_create_at,
     user_id,
   } = body;
 
-  let parameters = [];
+  //let parameters = [];
 
   if(id) parameters.push({id:id});
-  if(sku) parameters.push({sku:{ [Op.like]: `%${sku}%` }});
+  //if(sku) parameters.push({sku:{ [Op.like]: `%${sku}%` }});
   if(product_id) parameters.push({product_id:product_id});
-  if(product_name) parameters.push({product_name: {[Op.like]: `%${product_name}%`}});
-  if(brand_id) parameters.push({brand_id: brand_id});
+  //if(product_name) parameters.push({product_name: {[Op.like]: `%${product_name}%`}});
+  //if(brand_id) parameters.push({brand_id: brand_id});
   //if(bran//d_name) parameters.push( {brand_name:{[Op.like] : `%${brand_name}%`}} );
   if(type_move) parameters.push({ type_move: {[Op.like]: `%${type_move}%`}});
-  if(active) product.push({active: active});
+  //if(active) product.push({active: active});
 
+  /*
   if (create_at) {
     let create_at_start = new Date(create_at);
     let create_at_end = new Date(create_at);
@@ -149,6 +154,7 @@ exports.GetTransactions = async (body) => {
     let create_at_end = new Date(end_create_at);
     parameters.push({ create_at: { [Op.lte]: create_at_end } });
   }
+    */
 
   //
   // 

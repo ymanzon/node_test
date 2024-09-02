@@ -1,9 +1,12 @@
 const { Op } = require("sequelize");
 const { ProviderModel, ProviderModelView } = require("../models/provider.model");
-const { CreateAction, UpdateAction, DeleteAction }  = require ('../services/LogService');
+const { CreateAction, UpdateAction, DeleteAction, RetriveAction }  = require ('../services/LogService');
+const { generalFiltersParams } = require("../commons/general.filters.params");
+const { BrandViewModel } = require("../models/brand.model");
 
 exports.Create = async (body) => {
-  const { prov_code, firstname, lastname, active, user_id } = body;
+  console.log(body)
+  const { prov_code, firstname, lastname, active, user_id , brand_id } = body;
 
   let results = await ProviderModelView.findOne({ where: { prov_code: prov_code } });
 
@@ -11,10 +14,16 @@ exports.Create = async (body) => {
     throw Error(`Provider code '${prov_code}' already exists.`);
   }
 
+  let brand = await BrandViewModel.findByPk(brand_id);
+
+  if( !brand )
+      throw Error(`brand not exist, valid brand id`);
+
   await ProviderModel.create({
     prov_code: prov_code,
     firstname: firstname,
     lastname:lastname,
+    brand_id: brand_id,
     active: active == "true" ? 1 : 0,
     user_id: user_id,
   });
@@ -23,6 +32,7 @@ exports.Create = async (body) => {
     prov_code: prov_code,
     firstname: firstname,
     lastname:lastname,
+    brand_id: brand_id,
     active: active == "true" ? 1 : 0,
     user_id: user_id,
   }
@@ -31,48 +41,17 @@ exports.Create = async (body) => {
 };
 
 exports.Retrive = async (body) => {
+  let parameters = generalFiltersParams(body);
   const {
     prov_code,
     firstname,
     lastname,
-    active,
-    create_at,
-    start_create_at,
-    end_create_at,
-    user_id,
   } = body;
 
-  let parameters = [];
   if (prov_code) parameters.push({ prov_code: { [Op.like]: `%${prov_code}%` } });
   if (firstname) parameters.push({ firstname: { [Op.like]: `%${firstname}%` } });
   if (lastname) parameters.push({ lastname: { [Op.like]: `%${lastname}%` } });
 
-  if (active) parameters.push({ active: active == "true" ? 1 : 0 });
-
-  if (create_at) {
-    let create_at_start = new Date(create_at);
-    let create_at_end = new Date(create_at);
-
-    create_at_end.setDate(create_at_start.getDate() + 1);
-
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
-  }
-
-  if (start_create_at) {
-    //<= gte
-    let create_at_start = new Date(start_create_at);
-
-    parameters.push({ create_at: { [Op.gte]: create_at_start } });
-  }
-  if (end_create_at) {
-    //>= lte
-    let create_at_end = new Date(end_create_at);
-
-    parameters.push({ create_at: { [Op.lte]: create_at_end } });
-  }
-
-  
   const results = await ProviderModelView.findAll({ where: parameters });
 
   return results;
@@ -80,7 +59,7 @@ exports.Retrive = async (body) => {
 
 exports.Update = async (body, params) => {
   const { id } = params;
-  const { prov_code, firstname, lastname, active, user_id } = body;
+  const { prov_code, firstname, lastname, active, user_id, brand_id } = body;
 
   let preExists = await ProviderModel.findOne({
     where: {
@@ -99,6 +78,11 @@ exports.Update = async (body, params) => {
     );
   }
 
+  let brand = await BrandViewModel.findByPk(brand_id);
+
+  if( !brand )
+      throw Error(`brand not exist, valid brand id`);
+
   //find row by primary key
   const provider = await ProviderModel.findByPk(id);
 
@@ -110,10 +94,23 @@ exports.Update = async (body, params) => {
   provider.lastname = lastname;
   provider.prov_code = prov_code;
   provider.active = active == true ? 1 : 0;
+  provider.brand_id = brand_id;
   provider.update_at = Date.now();
   provider.user_id = user_id;
 
   await provider.save();
+};
+
+exports.ById = async (body) => {
+  console.log(body);
+  
+  const { id, user_id} = body;
+  const logMesage = {
+    user_id : user_id,
+    METRHOD: 'REGRIVE'
+  }
+  await RetriveAction(logMesage, user_id, 'PROVIDER');
+  return await ProviderModelView.findAll({ where: {id : id} });
 };
 
 exports.Delete = async (params) => {
@@ -136,3 +133,30 @@ exports.Delete = async (params) => {
 
   await provider.save();
 };
+
+exports.ChangeStatusActive = async (params) => {
+  const { id, active, user_id } = params;
+
+  let preExists = await ProviderModelView.findOne({
+    where: {
+      id: id,
+    },
+  });
+
+  if (!preExists) {
+    throw Error(`The provider ${id} not found.`);
+  }
+
+  if(preExists.active == active ){
+    throw Error(`The provider ${id} is ${active?'activated':'deactivated'}!`);
+  }
+
+
+  let provider = await ProviderModel.findByPk(id);
+
+  provider.update_at = Date.now();
+  provider.active = active == true?1:0;
+  provider.user_id = user_id;
+
+  await provider.save();
+}

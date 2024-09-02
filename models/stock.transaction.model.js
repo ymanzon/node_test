@@ -66,7 +66,7 @@ const StockTransactionsView = sequelize.define(
     product_id:{
       type:DataTypes.INTEGER
     },
-    product_name:{
+    /*product_name:{
       type:DataTypes.STRING
     },
     brand_id:{
@@ -74,7 +74,7 @@ const StockTransactionsView = sequelize.define(
     },
     brand_name:{
       type:DataTypes.STRING
-    },
+    },*/
     quantity:{
       type:DataTypes.DECIMAL
     },

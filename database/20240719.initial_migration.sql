@@ -824,3 +824,25 @@ MODIFY COLUMN create_at DATE;
 alter table stock_transactions
 MODIFY COLUMN update_at DATE;
 
+CREATE VIEW products_inventary_view AS 
+SELECT pw.id, pw.sku, pw.name, pw.brand_id, pw.brand_name, pw.active, pw.user_id, pw.create_at, pw.update_at,
+COALESCE( stqv.quantity, 0 ) AS quantity
+FROM products_view pw 
+LEFT JOIN stock_transactions_quantity_view stqv ON ( pw.id = stqv.product_id );
+
+DELETE FROM providers 
+
+ALTER TABLE providers 
+ADD COLUMN brand_id BIGINT NOT NULL
+
+ALTER TABLE providers 
+ADD CONSTRAINT providers_brand_fk
+FOREIGN KEY (brand_id) REFERENCES brands(id)
+
+ALTER VIEW providers_view AS 
+SELECT 
+	id, prov_code, firstname, lastname, brand_id, ACTIVE, create_at, update_at, user_id
+ FROM providers 
+ WHERE delete_at IS NULL 
+
+ 
